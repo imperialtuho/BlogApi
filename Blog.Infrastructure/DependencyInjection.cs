@@ -20,7 +20,7 @@ namespace Blog.Infrastructure
         {
             // Adds Repositories.
             services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
-            services.AddScoped<IBlogRepository, BlogRepository>();
+            services.AddScoped<IPostRepository, PostRepository>();
 
             return services;
         }

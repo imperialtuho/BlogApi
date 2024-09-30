@@ -2,7 +2,7 @@
 
 namespace Blog.Application.Interfaces.Services
 {
-    public interface IBlogService
+    public interface IPostService
     {
         Task<PostDto> GetByIdAsync(string id);
 

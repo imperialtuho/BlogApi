@@ -4,8 +4,10 @@
     {
         public string CategoryId => Id;
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public long PostCount { get; set; }
+        public IList<string?> PostIds { get; set; } = [];
+
+        public long PostCount => PostIds.Count;
     }
 }

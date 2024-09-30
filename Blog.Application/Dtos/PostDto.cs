@@ -7,17 +7,17 @@ namespace Blog.Application.Dtos
         public string PostId => Id;
 
         [Required]
-        public string Title { get; set; }
+        public required string Title { get; set; }
 
         [Required]
-        public string Content { get; set; }
+        public required string Content { get; set; }
 
-        public CategoryDto Category { get; set; }
+        public CategoryDto? Category { get; set; }
 
-        public ICollection<string?> Tags { get; set; } = [];
+        public ICollection<TagDto> Tags { get; set; } = [];
 
         [Required]
-        public UserDto User { get; set; }
+        public required UserDto User { get; set; }
 
         public IList<CommentDto> Comments { get; set; } = [];
 
