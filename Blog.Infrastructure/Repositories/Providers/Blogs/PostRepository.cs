@@ -20,11 +20,6 @@ namespace Blog.Infrastructure.Repositories.Providers.Blogs
 
         public async Task<Post> CreateAsync(PostDto post)
         {
-            if (post == null)
-            {
-                throw new InvalidOperationException($"{nameof(post)} cannot be null.");
-            }
-
             var postToAdd = post.Adapt<Post>();
 
             await AddAndSaveChangesAsync(postToAdd);

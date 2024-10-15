@@ -22,6 +22,7 @@ namespace Blog.Application
             // Adds setting json
             services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
             services.Configure<ApplicationSettings>(configuration.GetSection(nameof(ApplicationSettings)));
+            services.Configure<IdentityApiSettings>(configuration.GetSection(nameof(IdentityApiSettings)));
 
             const int MaxRequestBodySize = 100000000;
             string _myAllowSpecificOrigins = ApplicationConstants.MyAllowSpecificOrigins;
