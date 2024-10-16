@@ -193,8 +193,8 @@ namespace Blog.Api.Middlewares.Authentication
 
                 if (response.IsSuccessStatusCode)
                 {
-                    string? settingsJson = await response.Content.ReadAsStringAsync();
-                    JwtSettings? jwtSettings = JsonConvert.DeserializeObject<JwtSettings>(settingsJson);
+                    string settingsJson = await response.Content.ReadAsStringAsync();
+                    JwtSettings jwtSettings = JsonConvert.DeserializeObject<JwtSettings>(settingsJson);
 
                     if (jwtSettings != null)
                     {
