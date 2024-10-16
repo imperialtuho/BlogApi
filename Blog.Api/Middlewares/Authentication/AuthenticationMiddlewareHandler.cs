@@ -167,13 +167,13 @@ namespace Blog.Api.Middlewares.Authentication
         /// Handle Get JwtSettings From Memorycache.
         /// </summary>
         /// <returns>JwtSettings.</returns>
-        public async Task<JwtSettings?> GetJwtSettingsAsync()
+        public async Task<JwtSettings> GetJwtSettingsAsync()
         {
             try
             {
                 ApplicationSettings appSettings = applicationSettings.Value;
 
-                if (cache.TryGetValue(CacheKey, out JwtSettings? cacheSettings))
+                if (cache.TryGetValue(CacheKey, out JwtSettings cacheSettings))
                 {
                     return cacheSettings;
                 }
