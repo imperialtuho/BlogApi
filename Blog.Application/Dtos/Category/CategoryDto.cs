@@ -1,4 +1,4 @@
-﻿namespace Blog.Application.Dtos
+﻿namespace Blog.Application.Dtos.Category
 {
     public class CategoryDto : BaseDto<string>
     {

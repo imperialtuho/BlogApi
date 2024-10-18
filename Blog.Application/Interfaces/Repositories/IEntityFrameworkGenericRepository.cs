@@ -6,13 +6,19 @@ namespace Blog.Application.Interfaces.Repositories
     {
         Task<T> GetEntityByIdAsync(object id);
 
+        Task<T> GetEntityWithRelationByIdAsync(object id);
+
         Task AddAsync(T entity);
 
         Task AddAndSaveChangesAsync(T entity);
 
+        Task<T> AddWithSaveChangesAndReturnModelAsync(T entity);
+
         Task AddRangeAsync(IEnumerable<T> entities);
 
         Task UpdateAndSaveChangesAsync(T entity);
+
+        Task<T> UpdateWithSaveChangesAndReturnModelAsync(T entity);
 
         Task DeleteAndSaveChangesAsync(T entity);
 

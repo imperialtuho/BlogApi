@@ -1,6 +1,8 @@
 ﻿using Blog.Application.Configurations.Database;
+using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Infrastructure.Configurations;
+using Blog.Infrastructure.Repositories.ExternalProviders.IdentityApi;
 using Blog.Infrastructure.Repositories.Providers.Blogs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,9 +20,14 @@ namespace Blog.Infrastructure
         /// <exception cref="InvalidOperationException"></exception>
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddOptions();
+
             // Adds Repositories.
             services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
             services.AddScoped<IPostRepository, PostRepository>();
+
+            // Adds HttpClients
+            services.AddHttpClient<IIdentityApi, IdentityApi>();
 
             return services;
         }

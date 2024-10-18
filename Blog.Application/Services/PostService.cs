@@ -1,4 +1,4 @@
-﻿using Blog.Application.Dtos;
+﻿using Blog.Application.Dtos.Post;
 using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
@@ -15,22 +15,42 @@ namespace Blog.Application.Services
     /// <param name="identityApi">The identityApi.</param>
     public class PostService(IPostRepository postRepository, IIdentityApi identityApi) : IPostService
     {
-        public async Task<PostDto> CreateAsync(PostDto post)
+        public async Task<PostDto> CreateAsync(PostCreateRequest request)
         {
-            if (post == null)
+            if (request == null)
             {
-                throw new InvalidOperationException($"{nameof(post)} cannot be null.");
+                throw new InvalidOperationException($"{nameof(request)} cannot be null.");
             }
 
             // Validates User before creating Post.
-            _ = await identityApi.GetUserByIdAsync(post.User.UserId) ?? throw new InvalidOperationException($"Invalid User Id: {post.User.UserId}, the user with provided id could not be found!");
+            _ = await identityApi.GetUserByIdAsync(request.UserId) ?? throw new InvalidOperationException($"Invalid User Id: {request.UserId}, the user with provided id could not be found!");
 
-            return (await postRepository.CreateAsync(post)).Adapt<PostDto>();
+            var post = new Post
+            {
+                TenantId = request.TenantId,
+                CreatedDate = request.CreatedDate,
+                CreatedBy = request.CreatedBy,
+                ModifiedDate = request.ModifiedDate,
+                ModifiedBy = request.ModifiedBy,
+                IsActive = request.IsActive,
+                Title = request.Title,
+                Content = request.Content,
+                Url = request.Url,
+                CategoryId = request.CategoryId,
+                UserId = request.UserId,
+                PostTags = request.TagIds.Select(tagId => new PostTag { TagId = tagId }).ToList()
+            };
+
+            Post newPost = await postRepository.AddWithSaveChangesAndReturnModelAsync(post);
+
+            return newPost.Adapt<PostDto>();
         }
 
         public async Task<bool> DeleteAsync(string id)
         {
-            return await Task.Run(() => postRepository.DeleteAsync(id).IsCompleted);
+            Post post = await postRepository.GetEntityByIdAsync(id);
+
+            return await Task.Run(() => postRepository.DeleteAndSaveChangesAsync(post).IsCompleted);
         }
 
         public async Task<PaginatedResponse<PostDto>> SearchWithPaginatedResponseAsync(int pageNumber = 1, int pageSize = 10, Func<IQueryable<Post>, IQueryable<Post>>? predicate = null)
@@ -40,10 +60,12 @@ namespace Blog.Application.Services
 
         public async Task<PostDto> GetByIdAsync(string id)
         {
-            return (await postRepository.GetByIdAsync(id)).Adapt<PostDto>();
+            Post post = await postRepository.GetEntityWithRelationByIdAsync(id);
+
+            return post.Adapt<PostDto>();
         }
 
-        public Task<PostDto> UpdateAsync(PostDto post)
+        public Task<PostDto> UpdateAsync(PostUpdateRequest request)
         {
             throw new NotImplementedException();
         }

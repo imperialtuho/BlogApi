@@ -38,7 +38,7 @@ namespace Blog.Api.Middlewares.Authentication
         /// <summary>
         /// The IdentityUrl.
         /// </summary>
-        public static string? IdentityUrl { get; set; }
+        public static string IdentityUrl { get; set; }
 
         /// <summary>
         /// The cacheKey.
@@ -66,7 +66,7 @@ namespace Blog.Api.Middlewares.Authentication
                 return AuthenticateResult.Fail(Unauthorized);
             }
 
-            string? authorizationHeader = value;
+            string authorizationHeader = value;
 
             if (string.IsNullOrEmpty(authorizationHeader))
             {
@@ -78,7 +78,7 @@ namespace Blog.Api.Middlewares.Authentication
                 return AuthenticateResult.Fail(Unauthorized);
             }
 
-            string? token = authorizationHeader.Substring(Bearer.Length).Trim();
+            string token = authorizationHeader.Substring(Bearer.Length).Trim();
 
             if (string.IsNullOrEmpty(token))
             {

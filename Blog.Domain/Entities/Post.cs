@@ -12,8 +12,6 @@
 
         public string UserId { get; set; }
 
-        public User User { get; set; }
-
         public string? CategoryId { get; set; }
 
         public Category Category { get; set; }
@@ -23,6 +21,6 @@
 
         public ICollection<PostTag> PostTags { get; set; } = [];
 
-        public ICollection<Interaction?> Interactions { get; set; } = [];
+        public ICollection<Interaction> Interactions { get; set; } = [];
     }
 }

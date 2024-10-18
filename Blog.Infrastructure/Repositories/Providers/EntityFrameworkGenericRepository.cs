@@ -3,10 +3,12 @@ using Blog.Application.Interfaces.Repositories;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
 using Blog.Domain.Exceptions;
+using Blog.Domain.Extensions;
 using Blog.Domain.SharedKernel;
 using MAG.Product.Application.Configurations.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Blog.Infrastructure.Repositories.Providers
 {
@@ -46,6 +48,24 @@ namespace Blog.Infrastructure.Repositories.Providers
             _dbContext.Entry(entity).State = EntityState.Unchanged;
         }
 
+        public virtual async Task<T> AddWithSaveChangesAndReturnModelAsync(T entity)
+        {
+            InitializeEntity(entity);
+            await _dbContext.Set<T>().AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+            _dbContext.Entry(entity).State = EntityState.Unchanged;
+
+            // Load related data
+            EntityEntry entityEntry = _dbContext.Entry(entity);
+
+            foreach (NavigationEntry navigation in entityEntry.Navigations)
+            {
+                await navigation.LoadAsync();
+            }
+
+            return entity;
+        }
+
         public async Task AddAsync(T entity)
         {
             InitializeEntity(entity);
@@ -72,12 +92,37 @@ namespace Blog.Infrastructure.Repositories.Providers
             return await _dbContext.Set<T>().FindAsync(id) ?? throw new NotFoundException($"{nameof(GetEntityByIdAsync)} of {nameof(T)} with {id} not found!");
         }
 
+        public virtual async Task<T> GetEntityWithRelationByIdAsync(object id)
+        {
+            T? entity = await _dbContext.Set<T>().IncludeAllNavigations(_dbContext).FirstOrDefaultAsync(e => EF.Property<object>(e, "Id").Equals(id));
+
+            return entity ?? throw new NotFoundException($"{nameof(GetEntityByIdAsync)} of {nameof(T)} with {id} not found!");
+        }
+
         public async Task UpdateAndSaveChangesAsync(T entity)
         {
             UpdateEntity(entity);
             _dbContext.Entry(entity).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
             _dbContext.Entry(entity).State = EntityState.Unchanged;
+        }
+
+        public async Task<T> UpdateWithSaveChangesAndReturnModelAsync(T entity)
+        {
+            UpdateEntity(entity);
+            _dbContext.Entry(entity).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
+            _dbContext.Entry(entity).State = EntityState.Unchanged;
+
+            // Load related data
+            EntityEntry entityEntry = _dbContext.Entry(entity);
+
+            foreach (NavigationEntry navigation in entityEntry.Navigations)
+            {
+                await navigation.LoadAsync();
+            }
+
+            return entity;
         }
 
         public async Task DeleteAndSaveChangesAsync(T entity)
