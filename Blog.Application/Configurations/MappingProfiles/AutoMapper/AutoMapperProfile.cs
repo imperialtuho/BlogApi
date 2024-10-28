@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Blog.Application.Dtos;
+using Blog.Application.Dtos.Post;
 using Blog.Domain.Entities;
 
 namespace Blog.Application.Configurations.MappingProfiles.AutoMapper

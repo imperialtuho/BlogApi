@@ -1,8 +1,10 @@
-﻿namespace Blog.Application.Dtos
+﻿namespace Blog.Application.Dtos.Category
 {
-    public class BaseDto<T>
+    public class CategoryCreateRequest
     {
-        public T Id { get; set; }
+        public string? Name { get; set; }
+
+        public IList<string?> PostIds { get; set; } = [];
 
         public int? TenantId { get; set; }
 

@@ -18,7 +18,8 @@ namespace Blog.Domain.Helpers
             {
                 foreach (KeyValuePair<string, string> filter in _filters)
                 {
-                    var propertyInfo = typeof(T).GetProperty(filter.Key, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                    PropertyInfo? propertyInfo = typeof(T).GetProperty(filter.Key, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+
                     if (propertyInfo != null)
                     {
                         var parameter = Expression.Parameter(typeof(T), "e");

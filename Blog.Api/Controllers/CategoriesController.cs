@@ -1,35 +1,36 @@
+﻿using Blog.Application.Dtos.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.Api.Controllers
 {
     /// <summary>
-    /// The BlogsController.
+    /// The CategoriesController.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="postService">The blogService.</param>
+    /// <param name="categoryService">The categoryService.</param>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class BlogsController(ILogger<BlogsController> logger, IPostService postService) : ControllerBase
+    public class CategoriesController(ILogger<CategoriesController> logger, ICategoryService categoryService) : ControllerBase
     {
         /// <summary>
-        /// Gets Post by id async.
+        /// Gets Category by id async.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <returns>ActionResult{PostDto}.</returns>
+        /// <returns>ActionResult{CategoryDto}.</returns>
         /// <exception cref="UnhandledException">The UnhandledException.</exception>
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<PostDto>> GetByIdAsync(string id)
+        public async Task<ActionResult<CategoryDto>> GetByIdAsync(string id)
         {
             try
             {
-                return Ok(await postService.GetByIdAsync(id));
+                return Ok(await categoryService.GetByIdAsync(id));
             }
             catch (Exception ex)
             {
-                string errorMsg = string.Format(ErrorLogMessage, nameof(BlogsController), nameof(GetByIdAsync), ex.Message);
+                string errorMsg = string.Format(ErrorLogMessage, nameof(CategoriesController), nameof(GetByIdAsync), ex.Message);
                 logger.LogError(ex, errorMsg);
 
                 throw new UnhandledException(ex.Message);
@@ -37,21 +38,21 @@ namespace Blog.Api.Controllers
         }
 
         /// <summary>
-        /// Creates Post.
+        /// Creates Category.
         /// </summary>
-        /// <param name="post">The post.</param>
-        /// <returns>ActionResult{PostDto}.</returns>
+        /// <param name="Category">The Category.</param>
+        /// <returns>ActionResult{CategoryDto}.</returns>
         /// <exception cref="UnhandledException">The UnhandledException.</exception>
         [HttpPost]
-        public async Task<ActionResult<PostDto>> CreateAsync(PostDto post)
+        public async Task<ActionResult<CategoryDto>> CreateAsync(CategoryCreateRequest Category)
         {
             try
             {
-                return Ok(await postService.CreateAsync(post));
+                return Ok(await categoryService.CreateAsync(Category));
             }
             catch (Exception ex)
             {
-                string errorMsg = string.Format(ErrorLogMessage, nameof(BlogsController), nameof(CreateAsync), ex.Message);
+                string errorMsg = string.Format(ErrorLogMessage, nameof(CategoriesController), nameof(CreateAsync), ex.Message);
                 logger.LogError(ex, errorMsg);
 
                 throw new UnhandledException(ex.Message);
@@ -59,27 +60,27 @@ namespace Blog.Api.Controllers
         }
 
         /// <summary>
-        /// Updates Post.
+        /// Updates Category.
         /// </summary>
         /// <param name="id">The request id.</param>
-        /// <param name="post">The post.</param>
-        /// <returns>The updated post on successfully update action.</returns>
+        /// <param name="Category">The Category.</param>
+        /// <returns>The updated category on successfully update action.</returns>
         /// <exception cref="UnhandledException">The UnhandledException.</exception>
         [HttpPut("{id}")]
-        public async Task<ActionResult<PostDto>> UpdateAsync(string id, PostDto post)
+        public async Task<ActionResult<CategoryDto>> UpdateAsync(string id, CategoryUpdateRequest request)
         {
             try
             {
-                if (!id.Equals(post.Id, StringComparison.OrdinalIgnoreCase))
+                if (!id.Equals(request.Id, StringComparison.OrdinalIgnoreCase))
                 {
-                    return BadRequest($"Invalid param \'id\' between route and payload model!: From route: {id}, from payload: {post.Id}");
+                    return BadRequest($"Invalid param \'id\' between route and payload model!: From route: {id}, from payload: {request.Id}");
                 }
 
-                return (Ok(await postService.UpdateAsync(post)));
+                return (Ok(await categoryService.UpdateAsync(request)));
             }
             catch (Exception ex)
             {
-                string errorMsg = string.Format(ErrorLogMessage, nameof(BlogsController), nameof(UpdateAsync), ex.Message);
+                string errorMsg = string.Format(ErrorLogMessage, nameof(CategoriesController), nameof(UpdateAsync), ex.Message);
                 logger.LogError(ex, errorMsg);
 
                 throw new UnhandledException(ex.Message);
@@ -87,7 +88,7 @@ namespace Blog.Api.Controllers
         }
 
         /// <summary>
-        /// Deletes Post by id.
+        /// Deletes Category by id.
         /// </summary>
         /// <param name="id">The request id.</param>
         /// <returns>True/False based on action result.</returns>
@@ -97,11 +98,11 @@ namespace Blog.Api.Controllers
         {
             try
             {
-                return await postService.DeleteAsync(id);
+                return await categoryService.DeleteAsync(id);
             }
             catch (Exception ex)
             {
-                string errorMsg = string.Format(ErrorLogMessage, nameof(BlogsController), nameof(DeleteAsync), ex.Message);
+                string errorMsg = string.Format(ErrorLogMessage, nameof(CategoriesController), nameof(DeleteAsync), ex.Message);
                 logger.LogError(ex, errorMsg);
 
                 throw new UnhandledException(ex.Message);

@@ -1,11 +1,11 @@
 ﻿namespace Blog.Application.Dtos
 {
-    public class UserDto
+    public class UserDto : BaseDto<string>
     {
-        public string UserId { get; set; }
+        public string UserId => Id;
 
         public string Name { get; set; }
 
-        public string Description { get; set; }
+        public string Email { get; set; }
     }
 }
