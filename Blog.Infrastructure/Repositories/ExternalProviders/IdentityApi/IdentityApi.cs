@@ -24,7 +24,7 @@ namespace Blog.Infrastructure.Repositories.ExternalProviders.IdentityApi
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>Task{UserDto}.</returns>
-        public async Task<UserDto> GetUserByIdAsync(string id)
+        public async Task<UserDto?> GetUserByIdAsync(string id)
         {
             string message = $"Call to {nameof(GetUserByIdAsync)}. with id: {id}";
             _logger.LogInformation(message);
@@ -43,7 +43,7 @@ namespace Blog.Infrastructure.Repositories.ExternalProviders.IdentityApi
                     CancellationToken.None,
                     listRequestHeader: AddDefaultAccessTokenRequestHeaders());
 
-                return response ?? new UserDto();
+                return response;
             }
             catch (Exception ex)
             {

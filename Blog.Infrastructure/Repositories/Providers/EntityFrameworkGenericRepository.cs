@@ -2,6 +2,7 @@
 using Blog.Application.Interfaces.Repositories;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
+using Blog.Domain.Enums;
 using Blog.Domain.Exceptions;
 using Blog.Domain.Extensions;
 using Blog.Domain.SharedKernel;
@@ -38,6 +39,33 @@ namespace Blog.Infrastructure.Repositories.Providers
             _sqlConnectionFactory = sqlConnectionFactory;
             _dbContext = Activator.CreateInstance(typeof(C), options) as C ?? throw new InvalidOperationException("Cannot create DbContext");
             _httpContextAccessor = httpContextAccessor;
+        }
+
+        internal protected static DbContextOptions<C> CreateDbContextOptions(ISqlConnectionFactory sqlConnectionFactory, ConnectionStringType connectionStringType)
+        {
+            sqlConnectionFactory.SetConnectionStringType(connectionStringType);
+            (string? connectionString, ConnectionStringType dbType) = sqlConnectionFactory.GetConnectionStringAndDbType();
+            var optionsBuilder = new DbContextOptionsBuilder<C>();
+
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                switch (dbType)
+                {
+                    case ConnectionStringType.PostgresqlConnection:
+                        optionsBuilder.UseNpgsql(connectionString);
+                        break;
+
+                    case ConnectionStringType.SqlServerConnection:
+                        optionsBuilder.UseSqlServer(connectionString);
+                        break;
+
+                    default:
+                        optionsBuilder.UseSqlServer(connectionString);
+                        break;
+                }
+            }
+
+            return optionsBuilder.Options;
         }
 
         public virtual async Task AddAndSaveChangesAsync(T entity)
@@ -156,6 +184,7 @@ namespace Blog.Infrastructure.Repositories.Providers
 
         private void InitializeEntity(T entity)
         {
+            entity.Id = Guid.NewGuid().ToString();
             entity.TenantId = TenantId;
             string author = string.Empty;
 
@@ -167,7 +196,7 @@ namespace Blog.Infrastructure.Repositories.Providers
 
             entity.CreatedDate = DateTime.UtcNow;
             entity.ModifiedDate = null;
-            entity.ModifiedBy = author;
+            entity.ModifiedBy = null;
             entity.IsDeleted = false;
         }
 

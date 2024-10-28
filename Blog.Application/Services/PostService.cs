@@ -4,6 +4,7 @@ using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
+using Blog.Domain.Exceptions;
 using Mapster;
 
 namespace Blog.Application.Services
@@ -17,33 +18,39 @@ namespace Blog.Application.Services
     {
         public async Task<PostDto> CreateAsync(PostCreateRequest request)
         {
-            if (request == null)
+            try
             {
-                throw new InvalidOperationException($"{nameof(request)} cannot be null.");
+                if (request == null)
+                {
+                    throw new InvalidOperationException($"{nameof(request)} cannot be null.");
+                }
+
+                // Validates User before creating Post.
+                _ = await identityApi.GetUserByIdAsync(request.UserId) ?? throw new InvalidOperationException($"Invalid User Id: {request.UserId}, the user with provided id could not be found!");
+
+                var post = new Post
+                {
+                    TenantId = request.TenantId,
+                    CreatedDate = request.CreatedDate,
+                    ModifiedDate = request.ModifiedDate,
+                    ModifiedBy = request.ModifiedBy,
+                    IsActive = request.IsActive,
+                    Title = request.Title,
+                    Content = request.Content,
+                    Url = request.Url,
+                    CategoryId = request.CategoryId,
+                    UserId = request.UserId,
+                    PostTags = request.TagIds?.Select(tagId => new PostTag { TagId = tagId }).ToList()
+                };
+
+                Post newPost = await postRepository.AddWithSaveChangesAndReturnModelAsync(post);
+
+                return newPost.Adapt<PostDto>();
             }
-
-            // Validates User before creating Post.
-            _ = await identityApi.GetUserByIdAsync(request.UserId) ?? throw new InvalidOperationException($"Invalid User Id: {request.UserId}, the user with provided id could not be found!");
-
-            var post = new Post
+            catch (Exception ex)
             {
-                TenantId = request.TenantId,
-                CreatedDate = request.CreatedDate,
-                CreatedBy = request.CreatedBy,
-                ModifiedDate = request.ModifiedDate,
-                ModifiedBy = request.ModifiedBy,
-                IsActive = request.IsActive,
-                Title = request.Title,
-                Content = request.Content,
-                Url = request.Url,
-                CategoryId = request.CategoryId,
-                UserId = request.UserId,
-                PostTags = request.TagIds.Select(tagId => new PostTag { TagId = tagId }).ToList()
-            };
-
-            Post newPost = await postRepository.AddWithSaveChangesAndReturnModelAsync(post);
-
-            return newPost.Adapt<PostDto>();
+                throw new UnhandledException($"Error {ex.Message} with inner exception: {ex.InnerException}");
+            }
         }
 
         public async Task<bool> DeleteAsync(string id)

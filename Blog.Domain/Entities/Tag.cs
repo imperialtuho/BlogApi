@@ -4,6 +4,6 @@
     {
         public string Name { get; set; }
 
-        public ICollection<PostTag> PostTags { get; set; }
+        public ICollection<PostTag>? PostTags { get; set; }
     }
 }

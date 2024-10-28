@@ -14,13 +14,13 @@
 
         public string? CategoryId { get; set; }
 
-        public Category Category { get; set; }
-
         // Navigation props
-        public ICollection<Comment> Comments { get; set; } = [];
+        public Category? Category { get; set; }
 
-        public ICollection<PostTag> PostTags { get; set; } = [];
+        public ICollection<Comment>? Comments { get; set; }
 
-        public ICollection<Interaction> Interactions { get; set; } = [];
+        public ICollection<PostTag>? PostTags { get; set; }
+
+        public ICollection<Interaction>? Interactions { get; set; }
     }
 }

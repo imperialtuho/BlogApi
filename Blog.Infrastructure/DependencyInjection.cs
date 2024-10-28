@@ -24,6 +24,7 @@ namespace Blog.Infrastructure
 
             // Adds Repositories.
             services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
+
             services.AddScoped<IPostRepository, PostRepository>();
 
             // Adds HttpClients

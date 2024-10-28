@@ -8,6 +8,7 @@ namespace Blog.Infrastructure.Database
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Interaction> Interactions { get; set; }
+        public DbSet<Tag> Tags { get; set; }
 
         public ApplicationDbContext()
         { }
