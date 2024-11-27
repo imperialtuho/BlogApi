@@ -1,5 +1,5 @@
 ﻿using Blog.Application.Configurations.Settings;
-using Blog.Application.Dtos;
+using Blog.Application.Dtos.Author;
 using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +24,7 @@ namespace Blog.Infrastructure.Repositories.ExternalProviders.IdentityApi
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>Task{UserDto}.</returns>
-        public async Task<UserDto?> GetUserByIdAsync(string id)
+        public async Task<AuthorDto?> GetUserByIdAsync(string id)
         {
             string message = $"Call to {nameof(GetUserByIdAsync)}. with id: {id}";
             _logger.LogInformation(message);
@@ -36,7 +36,7 @@ namespace Blog.Infrastructure.Repositories.ExternalProviders.IdentityApi
 
                 FluentUriBuilder request = CreateRequest(requestUri);
 
-                var response = await GetAsync<UserDto>(
+                var response = await GetAsync<AuthorDto>(
                     $"{nameof(GetUserByIdAsync)} {requestUri}",
                     request.Uri,
                     providerName,

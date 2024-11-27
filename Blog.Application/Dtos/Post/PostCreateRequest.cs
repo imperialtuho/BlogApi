@@ -2,17 +2,12 @@
 {
     public class PostCreateRequest
     {
-        public int TenantId { get; set; }
-        public DateTime? CreatedDate { get; set; }
-        public string? CreatedBy { get; set; }
-        public DateTime? ModifiedDate { get; set; }
-        public string? ModifiedBy { get; set; }
         public bool IsActive { get; set; }
         public required string Title { get; set; }
         public required string Content { get; set; }
         public string? Url { get; set; }
         public string? CategoryId { get; set; } // ID of the existing category
-        public required string UserId { get; set; } // ID of the existing user
-        public List<string>? TagIds { get; set; } // IDs of the existing tags
+        public required string AuthorId { get; set; } // ID of the existing author
+        public List<string>? Tags { get; set; }
     }
 }

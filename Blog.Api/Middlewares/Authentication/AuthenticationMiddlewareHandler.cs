@@ -1,4 +1,5 @@
 ﻿using Blog.Application.Configurations.Settings;
+using Blog.Application.Dtos.Other;
 using Blog.Domain.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
@@ -43,17 +44,17 @@ namespace Blog.Api.Middlewares.Authentication
         /// <summary>
         /// The cacheKey.
         /// </summary>
-        private const string CacheKey = "JwtSettings";
+        private const string CacheKey = nameof(JwtSettings);
 
         /// <summary>
         /// The Unauthorized string constant.
         /// </summary>
-        private const string Unauthorized = "Unauthorized";
+        private const string Unauthorized = nameof(Unauthorized);
 
         /// <summary>
         /// The Bearer.
         /// </summary>
-        private const string Bearer = "Bearer";
+        private const string Bearer = nameof(Bearer);
 
         /// <summary>
         /// Handle Authenticate Async.
@@ -91,7 +92,8 @@ namespace Blog.Api.Middlewares.Authentication
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ValidateToken Failed");
+                _logger.LogError(ex, $"{nameof(ValidateTokenAsync)} failed!");
+
                 return AuthenticateResult.Fail(ex.Message);
             }
         }
@@ -118,8 +120,8 @@ namespace Blog.Api.Middlewares.Authentication
             {
                 var tokenValidationParameters = new TokenValidationParameters()
                 {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
                     ValidateLifetime = true,
                     RequireExpirationTime = true,
                     ValidateIssuerSigningKey = true,

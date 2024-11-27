@@ -1,8 +1,10 @@
-﻿namespace Blog.Application.Dtos
+﻿using Blog.Application.Dtos.Base;
+
+namespace Blog.Application.Dtos.Interaction
 {
-    public class InteractionDto : BaseDto<string>
+    public class InteractionDto : BaseDto
     {
-        public string InteractionId => Id;
+        public string InteractionId { get; set; }
 
         public string PostId { get; set; }
 

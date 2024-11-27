@@ -1,6 +1,8 @@
-﻿namespace Blog.Application.Dtos
+﻿using Blog.Application.Dtos.Base;
+
+namespace Blog.Application.Dtos.Tag
 {
-    public class TagDto : BaseDto<string>
+    public class TagDto : BaseDto
     {
         public string Name { get; set; }
 

@@ -6,7 +6,6 @@ using Blog.Domain.Enums;
 using Blog.Domain.Exceptions;
 using Blog.Domain.Extensions;
 using Blog.Domain.SharedKernel;
-using MAG.Product.Application.Configurations.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -41,7 +40,7 @@ namespace Blog.Infrastructure.Repositories.Providers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        internal protected static DbContextOptions<C> CreateDbContextOptions(ISqlConnectionFactory sqlConnectionFactory, ConnectionStringType connectionStringType)
+        protected internal static DbContextOptions<C> CreateDbContextOptions(ISqlConnectionFactory sqlConnectionFactory, ConnectionStringType connectionStringType)
         {
             sqlConnectionFactory.SetConnectionStringType(connectionStringType);
             (string? connectionString, ConnectionStringType dbType) = sqlConnectionFactory.GetConnectionStringAndDbType();
@@ -186,12 +185,10 @@ namespace Blog.Infrastructure.Repositories.Providers
         {
             entity.Id = Guid.NewGuid().ToString();
             entity.TenantId = TenantId;
-            string author = string.Empty;
 
             if (string.IsNullOrEmpty(entity.CreatedBy))
             {
-                author = LoginSession?.Email ?? "Site Administrators";
-                entity.CreatedBy = author;
+                entity.CreatedBy = LoginSession?.Email ?? "Site Administrators";
             }
 
             entity.CreatedDate = DateTime.UtcNow;
@@ -202,9 +199,8 @@ namespace Blog.Infrastructure.Repositories.Providers
 
         private void UpdateEntity(T entity)
         {
-            string? author = LoginSession?.Email ?? "Site Administrators";
             entity.ModifiedDate = DateTime.UtcNow;
-            entity.ModifiedBy = author;
+            entity.ModifiedBy = LoginSession?.Email ?? "Site Administrators";
         }
     }
 }

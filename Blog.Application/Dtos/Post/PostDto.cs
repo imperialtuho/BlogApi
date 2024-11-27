@@ -1,10 +1,13 @@
-﻿using Blog.Application.Dtos.Category;
+﻿using Blog.Application.Dtos.Base;
+using Blog.Application.Dtos.Category;
+using Blog.Application.Dtos.Comment;
+using Blog.Application.Dtos.Interaction;
 
 namespace Blog.Application.Dtos.Post
 {
-    public class PostDto : BaseDto<string>
+    public class PostDto : BaseDto
     {
-        public string PostId => Id;
+        public string PostId { get; set; }
 
         public string Title { get; set; }
 
@@ -12,9 +15,9 @@ namespace Blog.Application.Dtos.Post
 
         public CategoryDto? Category { get; set; }
 
-        public ICollection<TagDto> Tags { get; set; } = [];
+        public IList<string> Tags { get; set; } = [];
 
-        public string UserId { get; set; }
+        public string AuthorId { get; set; }
 
         public IList<CommentDto> Comments { get; set; } = [];
 

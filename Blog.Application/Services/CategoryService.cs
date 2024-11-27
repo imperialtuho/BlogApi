@@ -1,15 +1,15 @@
 ﻿using Blog.Application.Dtos.Category;
-using Blog.Application.Dtos.Post;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 
 namespace Blog.Application.Services
 {
-    public class CategoryService(ICategoryRepository categoryRepository) : ICategoryService
+    public class CategoryService(ICategoryRepository categoryRepository, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), ICategoryService
     {
-        public Task<PostDto> CreateAsync(CategoryCreateRequest request)
+        public Task<CategoryDto> CreateAsync(CategoryCreateRequest request)
         {
             throw new NotImplementedException();
         }
@@ -19,7 +19,7 @@ namespace Blog.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task<PostDto> GetByIdAsync(string id)
+        public Task<CategoryDto> GetByIdAsync(string id)
         {
             throw new NotImplementedException();
         }
@@ -29,7 +29,7 @@ namespace Blog.Application.Services
             throw new NotImplementedException();
         }
 
-        public Task<PostDto> UpdateAsync(CategoryUpdateRequest request)
+        public Task<CategoryDto> UpdateAsync(CategoryUpdateRequest request)
         {
             throw new NotImplementedException();
         }

@@ -1,9 +1,9 @@
-﻿using Blog.Application.Dtos;
+﻿using Blog.Application.Dtos.Author;
 
 namespace Blog.Application.Interfaces.ExternalProviders
 {
     public interface IIdentityApi
     {
-        Task<UserDto?> GetUserByIdAsync(string id);
+        Task<AuthorDto?> GetUserByIdAsync(string id);
     }
 }

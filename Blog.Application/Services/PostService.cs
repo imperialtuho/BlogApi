@@ -4,8 +4,8 @@ using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
-using Blog.Domain.Exceptions;
 using Mapster;
+using Microsoft.AspNetCore.Http;
 
 namespace Blog.Application.Services
 {
@@ -14,55 +14,44 @@ namespace Blog.Application.Services
     /// </summary>
     /// <param name="postRepository">The postRepository.</param>
     /// <param name="identityApi">The identityApi.</param>
-    public class PostService(IPostRepository postRepository, IIdentityApi identityApi) : IPostService
+    public class PostService(IPostRepository postRepository, IIdentityApi identityApi, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), IPostService
     {
         public async Task<PostDto> CreateAsync(PostCreateRequest request)
         {
-            try
+            if (request == null)
             {
-                if (request == null)
-                {
-                    throw new InvalidOperationException($"{nameof(request)} cannot be null.");
-                }
-
-                // Validates User before creating Post.
-                _ = await identityApi.GetUserByIdAsync(request.UserId) ?? throw new InvalidOperationException($"Invalid User Id: {request.UserId}, the user with provided id could not be found!");
-
-                var post = new Post
-                {
-                    TenantId = request.TenantId,
-                    CreatedDate = request.CreatedDate,
-                    ModifiedDate = request.ModifiedDate,
-                    ModifiedBy = request.ModifiedBy,
-                    IsActive = request.IsActive,
-                    Title = request.Title,
-                    Content = request.Content,
-                    Url = request.Url,
-                    CategoryId = request.CategoryId,
-                    UserId = request.UserId,
-                    PostTags = request.TagIds?.Select(tagId => new PostTag { TagId = tagId }).ToList()
-                };
-
-                Post newPost = await postRepository.AddWithSaveChangesAndReturnModelAsync(post);
-
-                return newPost.Adapt<PostDto>();
+                throw new InvalidOperationException($"{nameof(request)} cannot be null.");
             }
-            catch (Exception ex)
+
+            // Validates User before creating Post.
+            _ = await identityApi.GetUserByIdAsync(request.AuthorId) ?? throw new InvalidOperationException($"Invalid User Id: {request.AuthorId}, the user with provided id could not be found!");
+
+            var post = new Post
             {
-                throw new UnhandledException($"Error {ex.Message} with inner exception: {ex.InnerException}");
-            }
+                IsActive = request.IsActive,
+                Title = request.Title,
+                Content = request.Content,
+                Url = request.Url,
+                CategoryId = request.CategoryId,
+                AuthorId = request.AuthorId,
+                Tags = request.Tags
+            };
+
+            Post newPost = await postRepository.AddWithSaveChangesAndReturnModelAsync(post);
+
+            return newPost.Adapt<PostDto>();
         }
 
         public async Task<bool> DeleteAsync(string id)
         {
             Post post = await postRepository.GetEntityByIdAsync(id);
 
-            return await Task.Run(() => postRepository.DeleteAndSaveChangesAsync(post).IsCompleted);
-        }
+            if (IsActionPerformByAdmin(LoginSession) || post.AuthorId.Equals(LoginSession?.UserId.ToString()))
+            {
+                return await Task.Run(() => postRepository.DeleteAndSaveChangesAsync(post).IsCompleted);
+            }
 
-        public async Task<PaginatedResponse<PostDto>> SearchWithPaginatedResponseAsync(int pageNumber = 1, int pageSize = 10, Func<IQueryable<Post>, IQueryable<Post>>? predicate = null)
-        {
-            return (await postRepository.SearchWithPaginatedResponseAsync(pageNumber, pageSize, predicate)).Adapt<PaginatedResponse<PostDto>>();
+            throw new InvalidOperationException("You're not allowed to delete this post, reason: Post is not belong to current user");
         }
 
         public async Task<PostDto> GetByIdAsync(string id)
@@ -70,6 +59,11 @@ namespace Blog.Application.Services
             Post post = await postRepository.GetEntityWithRelationByIdAsync(id);
 
             return post.Adapt<PostDto>();
+        }
+
+        public async Task<PaginatedResponse<PostDto>> SearchWithPaginatedResponseAsync(int pageNumber = 1, int pageSize = 10, Func<IQueryable<Post>, IQueryable<Post>>? predicate = null)
+        {
+            return (await postRepository.SearchWithPaginatedResponseAsync(pageNumber, pageSize, predicate)).Adapt<PaginatedResponse<PostDto>>();
         }
 
         public Task<PostDto> UpdateAsync(PostUpdateRequest request)

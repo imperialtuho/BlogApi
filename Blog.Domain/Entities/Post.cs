@@ -2,15 +2,14 @@
 {
     public class Post : BaseEntity<string>
     {
-        public string Title { get; set; }
+        public required string Title { get; set; }
 
-        public string Content { get; set; }
+        public required string Content { get; set; }
 
         public string? Url { get; set; }
 
         // Foreign Keys
-
-        public string UserId { get; set; }
+        public required string AuthorId { get; set; }
 
         public string? CategoryId { get; set; }
 
@@ -19,7 +18,7 @@
 
         public ICollection<Comment>? Comments { get; set; }
 
-        public ICollection<PostTag>? PostTags { get; set; }
+        public ICollection<string>? Tags { get; set; }
 
         public ICollection<Interaction>? Interactions { get; set; }
     }

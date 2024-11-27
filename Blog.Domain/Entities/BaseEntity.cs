@@ -13,11 +13,11 @@ namespace Blog.Domain.Entities
 
         public string? CreatedBy { get; set; }
 
-        public DateTime? ModifiedDate { get; set; } = null!;
+        public DateTime? ModifiedDate { get; set; }
 
-        public string? ModifiedBy { get; set; } = null!;
+        public string? ModifiedBy { get; set; }
 
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         public bool IsDeleted { get; set; }
     }

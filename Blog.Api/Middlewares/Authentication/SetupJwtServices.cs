@@ -1,5 +1,4 @@
 ﻿using Blog.Application.Configurations.Settings;
-using Microsoft.IdentityModel.Logging;
 
 namespace Blog.Api.Middlewares.Authentication
 {

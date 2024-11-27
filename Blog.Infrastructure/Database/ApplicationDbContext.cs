@@ -8,7 +8,6 @@ namespace Blog.Infrastructure.Database
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Interaction> Interactions { get; set; }
-        public DbSet<Tag> Tags { get; set; }
 
         public ApplicationDbContext()
         { }
@@ -19,20 +18,6 @@ namespace Blog.Infrastructure.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Many-to-Many relationship between Post and Tag
-            modelBuilder.Entity<PostTag>()
-                .HasKey(pt => new { pt.PostId, pt.TagId });
-
-            modelBuilder.Entity<PostTag>()
-                .HasOne(pt => pt.Post)
-                .WithMany(p => p.PostTags)
-                .HasForeignKey(pt => pt.PostId);
-
-            modelBuilder.Entity<PostTag>()
-                .HasOne(pt => pt.Tag)
-                .WithMany(t => t.PostTags)
-                .HasForeignKey(pt => pt.TagId);
-
             // One-to-many relationship between Post and Category
             modelBuilder.Entity<Post>()
                 .HasOne(p => p.Category)

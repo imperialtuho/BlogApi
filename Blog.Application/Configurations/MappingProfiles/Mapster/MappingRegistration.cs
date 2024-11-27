@@ -1,4 +1,6 @@
-﻿using Blog.Application.Dtos;
+﻿using Blog.Application.Dtos.Category;
+using Blog.Application.Dtos.Comment;
+using Blog.Application.Dtos.Interaction;
 using Blog.Application.Dtos.Post;
 using Blog.Domain.Entities;
 using Mapster;
@@ -9,30 +11,29 @@ namespace Blog.Application.Configurations.MappingProfiles.Mapster
     {
         public void Register(TypeAdapterConfig config)
         {
+            // Mapping from Entity to DTO.
             config.NewConfig<Post, PostDto>()
                 .Map(dest => dest.PostId, src => src.Id)
                 .Map(dest => dest.Title, src => src.Title)
                 .Map(dest => dest.Content, src => src.Content)
-                .Map(dest => dest.CreatedDate, src => src.CreatedDate)
-                .Map(dest => dest.ModifiedDate, src => src.ModifiedDate)
                 .Map(dest => dest.Comments, src => src.Comments.Adapt<IList<CommentDto>>())
                 .Map(dest => dest.Interactions, src => src.Interactions.Adapt<IList<InteractionDto>>());
 
             config.NewConfig<Comment, CommentDto>().Map(dest => dest.CommentId, src => src.Id);
             config.NewConfig<Interaction, InteractionDto>().Map(dest => dest.InteractionId, src => src.Id);
+            config.NewConfig<Category, CategoryDto>().Map(dest => dest.CategoryId, src => src.Id);
 
-            // Reverse mappings
+            // Mapping from DTO to Entity
             config.NewConfig<PostDto, Post>()
                 .Map(dest => dest.Id, src => src.PostId)
                 .Map(dest => dest.Title, src => src.Title)
                 .Map(dest => dest.Content, src => src.Content)
-                .Map(dest => dest.CreatedDate, src => src.CreatedDate)
-                .Map(dest => dest.ModifiedDate, src => src.ModifiedDate)
                 .Map(dest => dest.Comments, src => src.Comments.Adapt<ICollection<Comment>>())
                 .Map(dest => dest.Interactions, src => src.Interactions.Adapt<ICollection<Interaction>>());
 
             config.NewConfig<CommentDto, Comment>().Map(dest => dest.Id, src => src.CommentId);
             config.NewConfig<InteractionDto, Interaction>().Map(dest => dest.Id, src => src.InteractionId);
+            config.NewConfig<CategoryDto, Category>().Map(dest => dest.Id, src => src.CategoryId);
         }
     }
 }

@@ -1,9 +1,7 @@
-﻿namespace Blog.Application.Dtos
+﻿namespace Blog.Application.Dtos.Base
 {
-    public class BaseDto<T>
+    public class BaseDto
     {
-        public T Id { get; set; }
-
         public int? TenantId { get; set; }
 
         public DateTime? CreatedDate { get; set; }

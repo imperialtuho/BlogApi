@@ -1,12 +1,14 @@
-﻿namespace Blog.Application.Dtos.Category
+﻿using Blog.Application.Dtos.Base;
+
+namespace Blog.Application.Dtos.Category
 {
-    public class CategoryDto : BaseDto<string>
+    public class CategoryDto : BaseDto
     {
-        public string CategoryId => Id;
+        public string CategoryId { get; set; }
 
         public string? Name { get; set; }
 
-        public IList<string?> PostIds { get; set; } = [];
+        public IList<string>? PostIds { get; set; } = [];
 
         public long PostCount => PostIds.Count;
     }

@@ -1,4 +1,5 @@
 using Blog.Api.Middlewares.Authentication;
+using Blog.Api.Middlewares.ExceptionHandler;
 using Blog.Application;
 using Blog.Application.Configurations.Settings;
 using Blog.Domain.Constants;
@@ -60,6 +61,19 @@ namespace Blog.Api
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+            }
+
+            if (!ExceptionHandlerMiddleware.IsProductionEnvironment(builder.Environment, _environmentName))
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseExceptionHandler(
+                    ExceptionHandlerMiddleware.CustomExceptionHandlerMiddleware(true, logger));
+            }
+            else
+            {
+                app.UseExceptionHandler(
+                    ExceptionHandlerMiddleware.CustomExceptionHandlerMiddleware(false, logger));
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();

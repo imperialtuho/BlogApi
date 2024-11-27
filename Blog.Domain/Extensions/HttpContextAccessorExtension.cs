@@ -1,8 +1,7 @@
-﻿using Blog.Domain.Extensions;
-using Blog.Domain.SharedKernel;
+﻿using Blog.Domain.SharedKernel;
 using Microsoft.AspNetCore.Http;
 
-namespace MAG.Product.Application.Configurations.Extensions
+namespace Blog.Domain.Extensions
 {
     public static class HttpContextAccessorExtension
     {

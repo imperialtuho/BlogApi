@@ -26,6 +26,7 @@ namespace Blog.Infrastructure
             services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
 
             services.AddScoped<IPostRepository, PostRepository>();
+            //services.AddScoped<ITagRepository, TagRepository>();
 
             // Adds HttpClients
             services.AddHttpClient<IIdentityApi, IdentityApi>();
