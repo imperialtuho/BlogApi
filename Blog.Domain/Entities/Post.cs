@@ -18,7 +18,7 @@
 
         public ICollection<Comment>? Comments { get; set; }
 
-        public ICollection<string>? Tags { get; set; }
+        public IList<string>? Tags { get; set; }
 
         public ICollection<Interaction>? Interactions { get; set; }
     }

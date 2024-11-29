@@ -1,4 +1,5 @@
 using Blog.Application.Dtos.Post;
+using Blog.Domain.Common;
 
 namespace Blog.Api.Controllers
 {
@@ -54,9 +55,21 @@ namespace Blog.Api.Controllers
         /// <param name="id">The request id.</param>
         /// <returns>True/False based on action result.</returns>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<bool>> DeleteAsync([FromRoute] string id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] string id)
         {
-            return await postService.DeleteAsync(id);
+            return ReturnResult(await postService.DeleteAsync(id), HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Searches by keyword.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Results which matched/similar with the request's keyword.</returns>
+        [HttpPost("search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchAsync([FromBody] SearchRequest request)
+        {
+            return ReturnResult(await postService.SearchAsync(request), HttpStatusCode.OK);
         }
     }
 }

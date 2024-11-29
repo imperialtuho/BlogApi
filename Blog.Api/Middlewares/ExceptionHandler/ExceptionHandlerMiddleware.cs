@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Newtonsoft.Json;
-using System.Net;
 using System.Security.Authentication;
 
 namespace Blog.Api.Middlewares.ExceptionHandler
@@ -39,6 +38,11 @@ namespace Blog.Api.Middlewares.ExceptionHandler
                     case AuthenticationException _:
                         responseObject.ErrorCode = HttpStatusCode.Unauthorized;
                         statusCode = HttpStatusCode.Unauthorized;
+                        break;
+
+                    case ForbiddenException _:
+                        responseObject.ErrorCode = HttpStatusCode.Forbidden;
+                        statusCode = HttpStatusCode.Forbidden;
                         break;
 
                     case NotFoundException _:

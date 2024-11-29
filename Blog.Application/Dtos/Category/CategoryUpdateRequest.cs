@@ -9,7 +9,5 @@
         public IList<string>? PostIds { get; set; } = [];
 
         public bool IsActive { get; set; }
-
-        public bool IsLocked { get; set; }
     }
 }

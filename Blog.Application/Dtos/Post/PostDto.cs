@@ -2,6 +2,7 @@
 using Blog.Application.Dtos.Category;
 using Blog.Application.Dtos.Comment;
 using Blog.Application.Dtos.Interaction;
+using Newtonsoft.Json;
 
 namespace Blog.Application.Dtos.Post
 {

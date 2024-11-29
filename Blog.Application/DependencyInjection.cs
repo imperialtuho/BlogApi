@@ -1,4 +1,5 @@
-﻿using Blog.Application.Configurations.Settings;
+﻿using Blog.Application.Configurations.MappingProfiles.Mapster;
+using Blog.Application.Configurations.Settings;
 using Blog.Application.Interfaces.Services;
 using Blog.Application.Services;
 using Blog.Domain.Constants;
@@ -11,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using System.Security.Principal;
-using Blog.Application.Configurations.MappingProfiles.Mapster;
 
 namespace Blog.Application
 {
@@ -31,7 +31,7 @@ namespace Blog.Application
 
             // Dependency injection support for Mapster
             // https://github.com/MapsterMapper/Mapster/wiki/Dependency-Injection
-            var config = new TypeAdapterConfig();
+            var config = TypeAdapterConfig.GlobalSettings;
             config.Apply(new MappingRegistration());
             config.Scan(Assembly.GetExecutingAssembly());
             services.AddSingleton(config);

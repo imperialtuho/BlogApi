@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Blog.Domain.Extensions
 {
@@ -6,16 +7,12 @@ namespace Blog.Domain.Extensions
     {
         public static IQueryable<T> IncludeAllNavigations<T>(this IQueryable<T> query, DbContext dbContext) where T : class
         {
-            var entityType = dbContext.Model.FindEntityType(typeof(T));
-            if (entityType == null)
-            {
-                throw new InvalidOperationException($"Entity type {typeof(T).Name} not found in the model.");
-            }
+            IEntityType? entityType = dbContext.Model.FindEntityType(typeof(T)) ?? throw new InvalidOperationException($"Entity type {typeof(T).Name} not found in the model.");
+            IEnumerable<INavigation> navigations = entityType.GetNavigations();
 
-            var navigations = entityType.GetNavigations();
-
-            foreach (var navigation in navigations)
+            foreach (INavigation navigation in navigations)
             {
+                // Safely include navigation properties
                 query = query.Include(navigation.Name);
             }
 

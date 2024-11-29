@@ -1,12 +1,11 @@
 ﻿using Blog.Application.Dtos.Post;
 using Blog.Domain.Common;
-using Blog.Domain.Entities;
 
 namespace Blog.Application.Interfaces.Services
 {
     public interface IPostService
     {
-        Task<PaginatedResponse<PostDto>> SearchWithPaginatedResponseAsync(int pageNumber = 1, int pageSize = 10, Func<IQueryable<Post>, IQueryable<Post>>? predicate = null);
+        Task<PaginatedResponse<PostDto>> SearchAsync(SearchRequest request);
 
         Task<PostDto> GetByIdAsync(string id);
 

@@ -19,9 +19,10 @@ namespace Blog.Infrastructure.Repositories.Providers
         protected C _dbContext;
         protected ISqlConnectionFactory _sqlConnectionFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        protected const int DefaultTenantId = 0;
 
         private UserSession? _UserSession;
-        private int? TenantIdentify => _httpContextAccessor.GetTenantIdentify();
+        private int? TenantIdentify => _httpContextAccessor.GetTenantIdentify() ?? DefaultTenantId;
         public int? TenantId => LoginSession?.TenantId ?? TenantIdentify;
 
         public UserSession? LoginSession
@@ -67,12 +68,14 @@ namespace Blog.Infrastructure.Repositories.Providers
             return optionsBuilder.Options;
         }
 
-        public virtual async Task AddAndSaveChangesAsync(T entity)
+        public virtual async Task<bool> AddAndSaveChangesAsync(T entity)
         {
             InitializeEntity(entity);
             await _dbContext.Set<T>().AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            int result = await _dbContext.SaveChangesAsync();
             _dbContext.Entry(entity).State = EntityState.Unchanged;
+
+            return result > 0;
         }
 
         public virtual async Task<T> AddWithSaveChangesAndReturnModelAsync(T entity)
@@ -126,12 +129,14 @@ namespace Blog.Infrastructure.Repositories.Providers
             return entity ?? throw new NotFoundException($"{nameof(GetEntityByIdAsync)} of {nameof(T)} with {id} not found!");
         }
 
-        public async Task UpdateAndSaveChangesAsync(T entity)
+        public async Task<bool> UpdateAndSaveChangesAsync(T entity)
         {
             UpdateEntity(entity);
             _dbContext.Entry(entity).State = EntityState.Modified;
-            await _dbContext.SaveChangesAsync();
+            int result = await _dbContext.SaveChangesAsync();
             _dbContext.Entry(entity).State = EntityState.Unchanged;
+
+            return result > 0;
         }
 
         public async Task<T> UpdateWithSaveChangesAndReturnModelAsync(T entity)
@@ -152,16 +157,16 @@ namespace Blog.Infrastructure.Repositories.Providers
             return entity;
         }
 
-        public async Task DeleteAndSaveChangesAsync(T entity)
+        public async Task<bool> DeleteAndSaveChangesAsync(T entity)
         {
             _dbContext.Set<T>().Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            return await _dbContext.SaveChangesAsync() > 0;
         }
 
-        public async Task DeleteRangeAndSaveChangesAsync(IEnumerable<T> entities)
+        public async Task<bool> DeleteRangeAndSaveChangesAsync(IEnumerable<T> entities)
         {
             _dbContext.Set<T>().RemoveRange(entities);
-            await _dbContext.SaveChangesAsync();
+            return await _dbContext.SaveChangesAsync() > 0;
         }
 
         public void DeleteRange(IEnumerable<T> entities)
@@ -195,6 +200,7 @@ namespace Blog.Infrastructure.Repositories.Providers
             entity.ModifiedDate = null;
             entity.ModifiedBy = null;
             entity.IsDeleted = false;
+            entity.IsActive = true;
         }
 
         private void UpdateEntity(T entity)

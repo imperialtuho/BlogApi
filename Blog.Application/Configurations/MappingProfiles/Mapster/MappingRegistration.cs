@@ -16,8 +16,8 @@ namespace Blog.Application.Configurations.MappingProfiles.Mapster
                 .Map(dest => dest.PostId, src => src.Id)
                 .Map(dest => dest.Title, src => src.Title)
                 .Map(dest => dest.Content, src => src.Content)
-                .Map(dest => dest.Comments, src => src.Comments.Adapt<IList<CommentDto>>())
-                .Map(dest => dest.Interactions, src => src.Interactions.Adapt<IList<InteractionDto>>());
+                .Map(dest => dest.Comments, src => src.Comments != null ? src.Comments.Adapt<IList<CommentDto>>() : null)
+                .Map(dest => dest.Interactions, src => src.Interactions != null ? src.Interactions.Adapt<IList<InteractionDto>>() : null);
 
             config.NewConfig<Comment, CommentDto>().Map(dest => dest.CommentId, src => src.Id);
             config.NewConfig<Interaction, InteractionDto>().Map(dest => dest.InteractionId, src => src.Id);
@@ -28,8 +28,8 @@ namespace Blog.Application.Configurations.MappingProfiles.Mapster
                 .Map(dest => dest.Id, src => src.PostId)
                 .Map(dest => dest.Title, src => src.Title)
                 .Map(dest => dest.Content, src => src.Content)
-                .Map(dest => dest.Comments, src => src.Comments.Adapt<ICollection<Comment>>())
-                .Map(dest => dest.Interactions, src => src.Interactions.Adapt<ICollection<Interaction>>());
+                .Map(dest => dest.Comments, src => src.Comments != null ? src.Comments.Adapt<IList<Comment>>() : null)
+                .Map(dest => dest.Interactions, src => src.Interactions != null ? src.Comments.Adapt<IList<Interaction>>() : null);
 
             config.NewConfig<CommentDto, Comment>().Map(dest => dest.Id, src => src.CommentId);
             config.NewConfig<InteractionDto, Interaction>().Map(dest => dest.Id, src => src.InteractionId);

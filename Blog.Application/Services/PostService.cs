@@ -4,8 +4,10 @@ using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
+using Blog.Domain.Exceptions;
 using Mapster;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 
 namespace Blog.Application.Services
 {
@@ -48,10 +50,10 @@ namespace Blog.Application.Services
 
             if (IsActionPerformByAdmin(LoginSession) || post.AuthorId.Equals(LoginSession?.UserId.ToString()))
             {
-                return await Task.Run(() => postRepository.DeleteAndSaveChangesAsync(post).IsCompleted);
+                return await postRepository.DeleteAndSaveChangesAsync(post);
             }
 
-            throw new InvalidOperationException("You're not allowed to delete this post, reason: Post is not belong to current user");
+            throw new ForbiddenException("You're not allowed to delete this post, reason: Post is not belong to current user");
         }
 
         public async Task<PostDto> GetByIdAsync(string id)
@@ -61,14 +63,32 @@ namespace Blog.Application.Services
             return post.Adapt<PostDto>();
         }
 
-        public async Task<PaginatedResponse<PostDto>> SearchWithPaginatedResponseAsync(int pageNumber = 1, int pageSize = 10, Func<IQueryable<Post>, IQueryable<Post>>? predicate = null)
+        public async Task<PaginatedResponse<PostDto>> SearchAsync(SearchRequest request)
         {
-            return (await postRepository.SearchWithPaginatedResponseAsync(pageNumber, pageSize, predicate)).Adapt<PaginatedResponse<PostDto>>();
+            string keyword = request.Keyword ?? string.Empty;
+
+            Func<IQueryable<Post>, IQueryable<Post>>? predicate = null;
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                predicate = (post) => post.Where(x => x.Content.Contains(keyword));
+            }
+
+            PaginatedResponse<Post> result = await postRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, predicate);
+
+            return new PaginatedResponse<PostDto>(result.Items.Adapt<IReadOnlyCollection<PostDto>>(), result.TotalCount, result.PageNumber, result.TotalPages);
         }
 
-        public Task<PostDto> UpdateAsync(PostUpdateRequest request)
+        public async Task<PostDto> UpdateAsync(PostUpdateRequest request)
         {
-            throw new NotImplementedException();
+            Post post = request.Adapt<Post>();
+
+            if (IsActionPerformByAdmin(LoginSession) || post.AuthorId.Equals(LoginSession?.UserId.ToString()))
+            {
+                return (await postRepository.UpdateWithSaveChangesAndReturnModelAsync(post)).Adapt<PostDto>();
+            }
+
+            throw new ForbiddenException("You're not allowed to update this post, reason: Post is not belong to current user");
         }
     }
 }
