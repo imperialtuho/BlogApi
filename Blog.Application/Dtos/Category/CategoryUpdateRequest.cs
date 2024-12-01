@@ -9,5 +9,7 @@
         public IList<string>? PostIds { get; set; } = [];
 
         public bool IsActive { get; set; }
+
+        public string? UserId { get; set; }
     }
 }

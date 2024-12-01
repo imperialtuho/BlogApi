@@ -68,6 +68,7 @@ namespace Blog.Application
             // Adds application services
 
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<ICategoryService, CategoryService>();
 
             return services;
         }

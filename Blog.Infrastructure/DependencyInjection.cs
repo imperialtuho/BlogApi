@@ -22,11 +22,10 @@ namespace Blog.Infrastructure
         {
             services.AddOptions();
 
-            // Adds Repositories.
             services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
-
+            // Adds Repositories.
             services.AddScoped<IPostRepository, PostRepository>();
-            //services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             // Adds HttpClients
             services.AddHttpClient<IIdentityApi, IdentityApi>();

@@ -17,7 +17,7 @@ namespace Blog.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetByIdAsync([FromRoute] string id)
         {
-            return ReturnResult(await categoryService.GetByIdAsync(id), HttpStatusCode.OK);
+            return Result(await categoryService.GetByIdAsync(id), HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Blog.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] CategoryCreateRequest Category)
         {
-            return ReturnResult(await categoryService.CreateAsync(Category), HttpStatusCode.Created);
+            return Result(await categoryService.CreateAsync(Category), HttpStatusCode.Created);
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Blog.Api.Controllers
                 return BadRequest($"Invalid param \'id\' between route and payload model!: From route: {id}, from payload: {request.Id}");
             }
 
-            return ReturnResult(await categoryService.UpdateAsync(request), HttpStatusCode.OK);
+            return Result(await categoryService.UpdateAsync(request), HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Blog.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] string id)
         {
-            return ReturnResult(await categoryService.DeleteAsync(id), HttpStatusCode.OK);
+            return Result(await categoryService.DeleteAsync(id), HttpStatusCode.OK);
         }
     }
 }

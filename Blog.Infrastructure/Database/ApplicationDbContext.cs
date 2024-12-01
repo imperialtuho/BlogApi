@@ -6,8 +6,12 @@ namespace Blog.Infrastructure.Database
     public class ApplicationDbContext : DbContext
     {
         public DbSet<Post> Posts { get; set; }
+
         public DbSet<Comment> Comments { get; set; }
+
         public DbSet<Interaction> Interactions { get; set; }
+
+        public DbSet<Category> Categories { get; set; }
 
         public ApplicationDbContext()
         { }

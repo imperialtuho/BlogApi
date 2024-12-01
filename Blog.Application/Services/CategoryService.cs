@@ -1,37 +1,74 @@
 ﻿using Blog.Application.Dtos.Category;
+using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
+using Blog.Domain.Exceptions;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 
 namespace Blog.Application.Services
 {
-    public class CategoryService(ICategoryRepository categoryRepository, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), ICategoryService
+    public class CategoryService(ICategoryRepository categoryRepository, IIdentityApi identityApi, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), ICategoryService
     {
-        public Task<CategoryDto> CreateAsync(CategoryCreateRequest request)
+        public async Task<CategoryDto> CreateAsync(CategoryCreateRequest request)
         {
-            throw new NotImplementedException();
+            if (request == null)
+            {
+                throw new InvalidOperationException($"{nameof(request)} cannot be null.");
+            }
+
+            if (!string.IsNullOrEmpty(request.UserId))
+            {
+                // Validates User before creating Post.
+                _ = await identityApi.GetUserByIdAsync(request.UserId) ?? throw new InvalidOperationException($"Invalid User Id: {request.UserId}, the user with provided id could not be found!");
+            }
+
+            var caterogy = request.Adapt<Category>();
+
+            Category newPost = await categoryRepository.AddWithSaveChangesAndReturnModelAsync(caterogy);
+
+            return newPost.Adapt<CategoryDto>();
         }
 
-        public Task<bool> DeleteAsync(string id)
+        public async Task<bool> DeleteAsync(string id)
         {
-            throw new NotImplementedException();
+            Category category = await categoryRepository.GetEntityByIdAsync(id);
+
+            if (IsActionPerformByAdmin(LoginSession) || (!category.IsGlobal && !string.IsNullOrEmpty(category.UserId) && (LoginSession?.UserId.Equals(category.UserId) ?? false)))
+            {
+                return await categoryRepository.DeleteAndSaveChangesAsync(category);
+            }
+
+            throw new ForbiddenException($"You're not allowed to update this {nameof(Category)}, reason: {nameof(Category)} is not belong to current user");
         }
 
-        public Task<CategoryDto> GetByIdAsync(string id)
+        public async Task<CategoryDto> GetByIdAsync(string id)
         {
-            throw new NotImplementedException();
+            Category category = await categoryRepository.GetEntityWithRelationByIdAsync(id);
+
+            return category.Adapt<CategoryDto>();
         }
 
-        public Task<PaginatedResponse<CategoryDto>> SearchWithPaginatedResponseAsync(int pageNumber = 1, int pageSize = 10, Func<IQueryable<Post>, IQueryable<Post>>? predicate = null)
+        public async Task<PaginatedResponse<CategoryDto>> SearchAsync(SearchRequest request)
         {
-            throw new NotImplementedException();
+            IQueryable<Category> predicate(IQueryable<Category> category) => category.Where(x => x.Name.Contains(request.Keyword));
+            PaginatedResponse<Category> result = await categoryRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, predicate);
+
+            return new PaginatedResponse<CategoryDto>(result.Items.Adapt<IReadOnlyCollection<CategoryDto>>(), result.TotalCount, result.PageNumber, result.TotalPages);
         }
 
-        public Task<CategoryDto> UpdateAsync(CategoryUpdateRequest request)
+        public async Task<CategoryDto> UpdateAsync(CategoryUpdateRequest request)
         {
-            throw new NotImplementedException();
+            Category category = request.Adapt<Category>();
+
+            if (IsActionPerformByAdmin(LoginSession) || (!category.IsGlobal && !string.IsNullOrEmpty(category.UserId) && (LoginSession?.UserId.Equals(category.UserId) ?? false)))
+            {
+                return (await categoryRepository.UpdateWithSaveChangesAndReturnModelAsync(category)).Adapt<CategoryDto>();
+            }
+
+            throw new ForbiddenException($"You're not allowed to update this {nameof(Category)}, reason: {nameof(Category)} is not belong to current user");
         }
     }
 }

@@ -16,9 +16,9 @@ namespace Blog.Api.Controllers
         /// <returns>A post after successfully getting post by id action.</returns>
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<PostDto>> GetByIdAsync([FromRoute] string id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] string id)
         {
-            return Ok(await postService.GetByIdAsync(id));
+            return Result(await postService.GetByIdAsync(id), HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Blog.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] PostCreateRequest post)
         {
-            return ReturnResult(await postService.CreateAsync(post), HttpStatusCode.Created);
+            return Result(await postService.CreateAsync(post), HttpStatusCode.Created);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Blog.Api.Controllers
                 return BadRequest($"Invalid param \'id\' between route and payload model!: From route: {id}, from payload: {post.Id}");
             }
 
-            return ReturnResult(await postService.UpdateAsync(post), HttpStatusCode.OK);
+            return Result(await postService.UpdateAsync(post), HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Blog.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] string id)
         {
-            return ReturnResult(await postService.DeleteAsync(id), HttpStatusCode.OK);
+            return Result(await postService.DeleteAsync(id), HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Blog.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> SearchAsync([FromBody] SearchRequest request)
         {
-            return ReturnResult(await postService.SearchAsync(request), HttpStatusCode.OK);
+            return Result(await postService.SearchAsync(request), HttpStatusCode.OK);
         }
     }
 }

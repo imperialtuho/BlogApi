@@ -4,6 +4,10 @@
     {
         public string Name { get; set; }
 
-        public ICollection<Post>? Posts { get; set; } = [];
+        public ICollection<Post>? Posts { get; set; }
+
+        public string? UserId { get; set; }
+
+        public bool IsGlobal => string.IsNullOrWhiteSpace(UserId) || string.IsNullOrEmpty(UserId);
     }
 }

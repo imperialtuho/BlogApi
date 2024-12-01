@@ -11,5 +11,9 @@ namespace Blog.Application.Dtos.Category
         public IList<string>? PostIds { get; set; } = [];
 
         public long PostCount => PostIds.Count;
+
+        public string? UserId { get; set; }
+
+        public bool IsGlobal { get; set; }
     }
 }
