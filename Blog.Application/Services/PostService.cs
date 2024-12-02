@@ -15,7 +15,7 @@ namespace Blog.Application.Services
     /// </summary>
     /// <param name="postRepository">The postRepository.</param>
     /// <param name="identityApi">The identityApi.</param>
-    public class PostService(IPostRepository postRepository, IIdentityApi identityApi, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), IPostService
+    public class PostService(IPostRepository postRepository, ICategoryRepository categoryRepository, IIdentityApi identityApi, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), IPostService
     {
         public async Task<PostDto> CreateAsync(PostCreateRequest request)
         {
@@ -24,12 +24,17 @@ namespace Blog.Application.Services
                 throw new InvalidOperationException($"{nameof(request)} cannot be null.");
             }
 
+            if (!string.IsNullOrEmpty(request.CategoryId))
+            {
+                // Validate category
+                _ = await categoryRepository.GetEntityByIdAsync(request.CategoryId) ?? throw new InvalidOperationException($"Invalid {nameof(Category)}: {request.CategoryId}, the {nameof(Category)} with the provided id could not be found!");
+            }
+
             // Validates User before creating Post.
-            _ = await identityApi.GetUserByIdAsync(request.AuthorId) ?? throw new InvalidOperationException($"Invalid User Id: {request.AuthorId}, the user with provided id could not be found!");
+            _ = await identityApi.GetUserByIdAsync(request.AuthorId) ?? throw new InvalidOperationException($"Invalid User Id: {request.AuthorId}, the user with the provided id could not be found!");
 
             var post = new Post
             {
-                IsActive = request.IsActive,
                 Title = request.Title,
                 Content = request.Content,
                 Url = request.Url,
@@ -64,7 +69,25 @@ namespace Blog.Application.Services
 
         public async Task<PaginatedResponse<PostDto>> SearchAsync(SearchRequest request)
         {
-            IQueryable<Post> predicate(IQueryable<Post> post) => post.Where(x => x.Content.Contains(request.Keyword));
+            Func<IQueryable<Post>, IQueryable<Post>> predicate = posts =>
+            {
+                // Base filter: match keyword in Name
+                IQueryable<Post> query = posts.Where(entity => entity.Content.Contains(request.Keyword));
+
+                // Filter out deleted posts if not including deleted
+                if (!request.IsIncludingDelete)
+                {
+                    query = query.Where(entity => !entity.IsDeleted);
+                }
+
+                // Further filter by active status if not including active-only
+                if (!request.IsIncludingActiveOnly)
+                {
+                    query = query.Where(entity => entity.IsActive);
+                }
+
+                return query;
+            };
             PaginatedResponse<Post> result = await postRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, predicate);
 
             return new PaginatedResponse<PostDto>(result.Items.Adapt<IReadOnlyCollection<PostDto>>(), result.TotalCount, result.PageNumber, result.TotalPages);
@@ -72,6 +95,12 @@ namespace Blog.Application.Services
 
         public async Task<PostDto> UpdateAsync(PostUpdateRequest request)
         {
+            if (!string.IsNullOrEmpty(request.CategoryId))
+            {
+                // Validate category
+                _ = await categoryRepository.GetEntityByIdAsync(request.CategoryId) ?? throw new InvalidOperationException($"Invalid {nameof(Category)}: {request.CategoryId}, the {nameof(Category)} with the provided id could not be found!");
+            }
+
             Post post = request.Adapt<Post>();
 
             if (IsActionPerformByAdmin(LoginSession) || post.AuthorId.Equals(LoginSession?.UserId.ToString()))

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Blog.Application.Services
 {
-    public class CategoryService(ICategoryRepository categoryRepository, IIdentityApi identityApi, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), ICategoryService
+    public class CategoryService(ICategoryRepository categoryRepository, IPostRepository postRepository, IIdentityApi identityApi, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), ICategoryService
     {
         public async Task<CategoryDto> CreateAsync(CategoryCreateRequest request)
         {
@@ -23,6 +23,12 @@ namespace Blog.Application.Services
             {
                 // Validates User before creating Post.
                 _ = await identityApi.GetUserByIdAsync(request.UserId) ?? throw new InvalidOperationException($"Invalid User Id: {request.UserId}, the user with provided id could not be found!");
+            }
+
+            if (request.PostIds != null && request.PostIds.Count > 0)
+            {
+                // Validate Posts
+                _ = await postRepository.GetByIdsAsync(request.PostIds) ?? throw new InvalidOperationException($"Invalid {nameof(Post)}Ids: {request.PostIds}, the provided {nameof(Post)}Ids could not be found!");
             }
 
             var caterogy = request.Adapt<Category>();
@@ -53,7 +59,26 @@ namespace Blog.Application.Services
 
         public async Task<PaginatedResponse<CategoryDto>> SearchAsync(SearchRequest request)
         {
-            IQueryable<Category> predicate(IQueryable<Category> category) => category.Where(x => x.Name.Contains(request.Keyword));
+            Func<IQueryable<Category>, IQueryable<Category>> predicate = categories =>
+            {
+                // Base filter: match keyword in Name
+                IQueryable<Category> query = categories.Where(entity => entity.Name.Contains(request.Keyword));
+
+                // Filter out deleted categories if not including deleted
+                if (!request.IsIncludingDelete)
+                {
+                    query = query.Where(entity => !entity.IsDeleted);
+                }
+
+                // Further filter by active status if not including active-only
+                if (!request.IsIncludingActiveOnly)
+                {
+                    query = query.Where(entity => entity.IsActive);
+                }
+
+                return query;
+            };
+
             PaginatedResponse<Category> result = await categoryRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, predicate);
 
             return new PaginatedResponse<CategoryDto>(result.Items.Adapt<IReadOnlyCollection<CategoryDto>>(), result.TotalCount, result.PageNumber, result.TotalPages);

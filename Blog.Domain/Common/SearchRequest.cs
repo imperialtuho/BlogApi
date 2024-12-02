@@ -7,5 +7,9 @@
         public int PageNumber { get; set; }
 
         public int PageSize { get; set; }
+
+        public bool IsIncludingActiveOnly { get; set; }
+
+        public bool IsIncludingDelete { get; set; }
     }
 }

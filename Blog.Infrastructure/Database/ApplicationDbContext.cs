@@ -39,6 +39,13 @@ namespace Blog.Infrastructure.Database
                 .HasOne(i => i.Post)
                 .WithMany(p => p.Interactions)
                 .HasForeignKey(i => i.PostId);
+
+            // Default Query Filter
+            modelBuilder.Entity<Post>()
+                .HasQueryFilter(post => post.IsActive && !post.IsDeleted);
+
+            modelBuilder.Entity<Category>()
+                .HasQueryFilter(category => category.IsActive && !category.IsDeleted);
         }
     }
 }
