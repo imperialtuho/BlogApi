@@ -2,10 +2,16 @@
 {
     public class CategoryCreateRequest
     {
-        public string? Name { get; set; }
+        public string Title { get; set; }
 
-        public IList<string>? PostIds { get; set; }
+        public string Label { get; set; }
 
-        public string? UserId { get; set; }
+        public string Description { get; set; }
+
+        public string CoverImageUrl { get; set; }
+
+        public string Slug { get; set; }
+
+        public int DisplayPosition { get; set; }
     }
 }

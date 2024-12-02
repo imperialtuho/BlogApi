@@ -1,19 +1,26 @@
-﻿using Blog.Application.Dtos.Base;
+﻿using Blog.Application.Dtos.Author;
+using Blog.Application.Dtos.Base;
 
 namespace Blog.Application.Dtos.Category
 {
     public class CategoryDto : BaseDto
     {
-        public string CategoryId { get; set; }
+        public string Id { get; set; }
 
-        public string? Name { get; set; }
+        public string Title { get; set; }
 
-        public IList<string>? PostIds { get; set; } = [];
+        public string Label { get; set; }
 
-        public long PostCount => PostIds?.Count ?? 0;
+        public string? Description { get; set; }
 
-        public string? UserId { get; set; }
+        public string? CoverImageUrl { get; set; }
 
-        public bool IsGlobal { get; set; }
+        public string Slug { get; set; }
+
+        public int DisplayPosition { get; set; }
+
+        public long PostCount { get; set; }
+
+        public AuthorDto? Author { get; set; }
     }
 }

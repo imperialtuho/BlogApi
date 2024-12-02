@@ -13,6 +13,8 @@ namespace Blog.Infrastructure.Database
 
         public DbSet<Category> Categories { get; set; }
 
+        public DbSet<PostCategory> PostCategories { get; set; }
+
         public ApplicationDbContext()
         { }
 
@@ -22,11 +24,19 @@ namespace Blog.Infrastructure.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // One-to-many relationship between Post and Category
-            modelBuilder.Entity<Post>()
-                .HasOne(p => p.Category)
-                .WithMany(c => c.Posts)
-                .HasForeignKey(p => p.CategoryId);
+            // Many-to-Many
+            modelBuilder.Entity<PostCategory>()
+                .HasKey(pc => new { pc.PostId, pc.CategoryId }); // Composite Key
+
+            modelBuilder.Entity<PostCategory>()
+                .HasOne(pc => pc.Post)
+                .WithMany(p => p.PostCategories)
+                .HasForeignKey(pc => pc.PostId);
+
+            modelBuilder.Entity<PostCategory>()
+                .HasOne(pc => pc.Category)
+                .WithMany(c => c.PostCategories)
+                .HasForeignKey(pc => pc.CategoryId);
 
             // One-to-many relationship between Post and Comment
             modelBuilder.Entity<Comment>()
@@ -42,10 +52,10 @@ namespace Blog.Infrastructure.Database
 
             // Default Query Filter
             modelBuilder.Entity<Post>()
-                .HasQueryFilter(post => post.IsActive && !post.IsDeleted);
+                .HasQueryFilter(post => !post.IsDeleted);
 
             modelBuilder.Entity<Category>()
-                .HasQueryFilter(category => category.IsActive && !category.IsDeleted);
+                .HasQueryFilter(category => !category.IsDeleted);
         }
     }
 }

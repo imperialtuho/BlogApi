@@ -16,7 +16,8 @@
         public string? CategoryId { get; set; }
 
         // Navigation props
-        public Category? Category { get; set; }
+        // Navigation Property
+        public ICollection<PostCategory> PostCategories { get; set; }
 
         public ICollection<Comment>? Comments { get; set; }
 

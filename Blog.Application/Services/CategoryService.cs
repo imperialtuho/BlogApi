@@ -1,10 +1,12 @@
-﻿using Blog.Application.Dtos.Category;
+﻿using Blog.Application.Dtos.Author;
+using Blog.Application.Dtos.Category;
 using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
 using Blog.Domain.Exceptions;
+using Blog.Domain.Extensions;
 using Mapster;
 using Microsoft.AspNetCore.Http;
 
@@ -19,30 +21,33 @@ namespace Blog.Application.Services
                 throw new InvalidOperationException($"{nameof(request)} cannot be null.");
             }
 
-            if (!string.IsNullOrEmpty(request.UserId))
+            AuthorDto? author;
+            author = await identityApi.GetUserByIdAsync(LoginSession!.UserId.ToString()) ?? throw new InvalidOperationException($"Invalid AuthorId: {LoginSession.UserId}, the user with provided id could not be found!");
+
+            var caterogy = new Category()
             {
-                // Validates User before creating Post.
-                _ = await identityApi.GetUserByIdAsync(request.UserId) ?? throw new InvalidOperationException($"Invalid User Id: {request.UserId}, the user with provided id could not be found!");
-            }
+                Title = request.Title,
+                Label = request.Label,
+                Description = request.Description,
+                CoverImageUrl = request.CoverImageUrl,
+                Slug = StringHelper.ToSlug(request.Title),
+                DisplayPosition = request.DisplayPosition,
+                UserId = LoginSession!.UserId.ToString()
+            };
 
-            if (request.PostIds != null && request.PostIds.Count > 0)
-            {
-                // Validate Posts
-                _ = await postRepository.GetByIdsAsync(request.PostIds) ?? throw new InvalidOperationException($"Invalid {nameof(Post)}Ids: {request.PostIds}, the provided {nameof(Post)}Ids could not be found!");
-            }
+            Category newCategory = await categoryRepository.AddWithSaveChangesAndReturnModelAsync(caterogy);
 
-            var caterogy = request.Adapt<Category>();
+            var result = newCategory.Adapt<CategoryDto>();
+            result.Author = author;
 
-            Category newPost = await categoryRepository.AddWithSaveChangesAndReturnModelAsync(caterogy);
-
-            return newPost.Adapt<CategoryDto>();
+            return result;
         }
 
         public async Task<bool> DeleteAsync(string id)
         {
             Category category = await categoryRepository.GetEntityByIdAsync(id);
 
-            if (IsActionPerformByAdmin(LoginSession) || (!category.IsGlobal && !string.IsNullOrEmpty(category.UserId) && (LoginSession?.UserId.Equals(category.UserId) ?? false)))
+            if (IsActionPerformByAdmin(LoginSession) || (!string.IsNullOrEmpty(category.CreatedBy) && (LoginSession?.UserId.Equals(category.CreatedBy) ?? false)))
             {
                 return await categoryRepository.DeleteAndSaveChangesAsync(category);
             }
@@ -62,18 +67,12 @@ namespace Blog.Application.Services
             Func<IQueryable<Category>, IQueryable<Category>> predicate = categories =>
             {
                 // Base filter: match keyword in Name
-                IQueryable<Category> query = categories.Where(entity => entity.Name.Contains(request.Keyword));
+                IQueryable<Category> query = categories.Where(entity => entity.Label.Contains(request.Keyword));
 
                 // Filter out deleted categories if not including deleted
                 if (!request.IsIncludingDelete)
                 {
                     query = query.Where(entity => !entity.IsDeleted);
-                }
-
-                // Further filter by active status if not including active-only
-                if (!request.IsIncludingActiveOnly)
-                {
-                    query = query.Where(entity => entity.IsActive);
                 }
 
                 return query;
@@ -88,7 +87,7 @@ namespace Blog.Application.Services
         {
             Category category = request.Adapt<Category>();
 
-            if (IsActionPerformByAdmin(LoginSession) || (!category.IsGlobal && !string.IsNullOrEmpty(category.UserId) && (LoginSession?.UserId.Equals(category.UserId) ?? false)))
+            if (IsActionPerformByAdmin(LoginSession) || (!string.IsNullOrEmpty(category.UserId) && (LoginSession?.UserId.Equals(category.UserId) ?? false)))
             {
                 return (await categoryRepository.UpdateWithSaveChangesAndReturnModelAsync(category)).Adapt<CategoryDto>();
             }

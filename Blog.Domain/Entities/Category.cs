@@ -2,12 +2,21 @@
 {
     public class Category : BaseEntity<string>
     {
-        public string Name { get; set; }
+        public string Title { get; set; }
 
-        public ICollection<Post>? Posts { get; set; }
+        public string Label { get; set; }
 
-        public string? UserId { get; set; }
+        public string? Description { get; set; }
 
-        public bool IsGlobal => string.IsNullOrWhiteSpace(UserId) || string.IsNullOrEmpty(UserId);
+        public string? CoverImageUrl { get; set; }
+
+        public string Slug { get; set; }
+
+        public int DisplayPosition { get; set; }
+
+        public string UserId { get; set; }
+
+        // Navigation Property
+        public ICollection<PostCategory> PostCategories { get; set; }
     }
 }

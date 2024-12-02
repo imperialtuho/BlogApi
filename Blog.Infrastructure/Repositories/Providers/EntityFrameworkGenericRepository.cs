@@ -8,7 +8,6 @@ using Blog.Domain.Extensions;
 using Blog.Domain.SharedKernel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Blog.Infrastructure.Repositories.Providers
 {
@@ -85,14 +84,6 @@ namespace Blog.Infrastructure.Repositories.Providers
             await _dbContext.SaveChangesAsync();
             _dbContext.Entry(entity).State = EntityState.Unchanged;
 
-            // Load related data
-            EntityEntry entityEntry = _dbContext.Entry(entity);
-
-            foreach (NavigationEntry navigation in entityEntry.Navigations)
-            {
-                await navigation.LoadAsync();
-            }
-
             return entity;
         }
 
@@ -146,14 +137,6 @@ namespace Blog.Infrastructure.Repositories.Providers
             await _dbContext.SaveChangesAsync();
             _dbContext.Entry(entity).State = EntityState.Unchanged;
 
-            // Load related data
-            EntityEntry entityEntry = _dbContext.Entry(entity);
-
-            foreach (NavigationEntry navigation in entityEntry.Navigations)
-            {
-                await navigation.LoadAsync();
-            }
-
             return entity;
         }
 
@@ -200,7 +183,6 @@ namespace Blog.Infrastructure.Repositories.Providers
             entity.ModifiedDate = null;
             entity.ModifiedBy = null;
             entity.IsDeleted = false;
-            entity.IsActive = true;
         }
 
         private void UpdateEntity(T entity)
