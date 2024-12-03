@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Net;
-
-namespace Blog.Api.Controllers
+﻿namespace Blog.Api.Controllers
 {
     /// <summary>
     /// Base controller.
@@ -19,7 +15,7 @@ namespace Blog.Api.Controllers
         /// <param name="data">The data will be returned</param>
         /// <param name="statusCode">The status code.</param>
         /// <returns>Return a result after performing controller's action.</returns>
-        protected IActionResult ReturnResult<T>(T data, HttpStatusCode statusCode = HttpStatusCode.OK)
+        protected IActionResult Result<T>(T data, HttpStatusCode statusCode = HttpStatusCode.OK)
         {
             return base.StatusCode((int)statusCode, data);
         }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Blog.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241126050814_AddAuthorAndRefactor")]
-    partial class AddAuthorAndRefactor
+    [Migration("20241202041630_InitBlogApiDb")]
+    partial class InitBlogApiDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,9 +55,12 @@ namespace Blog.Api.Migrations
                     b.Property<int?>("TenantId")
                         .HasColumnType("int");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Category");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("Blog.Domain.Entities.Comment", b =>

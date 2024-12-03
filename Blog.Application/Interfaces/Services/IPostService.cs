@@ -14,5 +14,7 @@ namespace Blog.Application.Interfaces.Services
         Task<PostDto> UpdateAsync(PostUpdateRequest request);
 
         Task<bool> DeleteAsync(string id);
+
+        Task<IList<string>> AssignCategoryToPostAsync(string id, IList<string> categoryIds);
     }
 }

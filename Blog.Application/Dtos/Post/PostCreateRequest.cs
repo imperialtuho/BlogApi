@@ -2,7 +2,7 @@
 {
     public class PostCreateRequest
     {
-        public bool IsActive { get; set; }
+        public bool IsPublished { get; set; }
         public required string Title { get; set; }
         public required string Content { get; set; }
         public string? Url { get; set; }

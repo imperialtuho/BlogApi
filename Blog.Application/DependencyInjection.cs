@@ -6,12 +6,10 @@ using Blog.Domain.Constants;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using System.Security.Principal;
 
 namespace Blog.Application
 {
@@ -36,9 +34,6 @@ namespace Blog.Application
             config.Scan(Assembly.GetExecutingAssembly());
             services.AddSingleton(config);
             services.AddScoped<IMapper, ServiceMapper>();
-
-            services.AddHttpContextAccessor();
-            services.AddTransient<IPrincipal>(provider => provider.GetService<IHttpContextAccessor>()!.HttpContext!.User);
 
             services.AddResponseCompression(options =>
             {
@@ -68,6 +63,7 @@ namespace Blog.Application
             // Adds application services
 
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<ICategoryService, CategoryService>();
 
             return services;
         }

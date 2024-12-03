@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace Blog.Api.Middlewares.Authentication
 {
@@ -189,14 +189,20 @@ namespace Blog.Api.Middlewares.Authentication
                     Password = password
                 };
 
-                var content = new StringContent(JsonConvert.SerializeObject(passwordDto), Encoding.UTF8, "application/json");
+                var content = new StringContent(JsonSerializer.Serialize(passwordDto), Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = await client.PostAsync($"{IdentityUrl}settings/jwt", content);
 
                 if (response.IsSuccessStatusCode)
                 {
+                    var jsonDeserializeOptions = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true, // Optional: ignore case in property names
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    };
+
                     string settingsJson = await response.Content.ReadAsStringAsync();
-                    JwtSettings jwtSettings = JsonConvert.DeserializeObject<JwtSettings>(settingsJson);
+                    JwtSettings jwtSettings = JsonSerializer.Deserialize<JwtSettings>(settingsJson, jsonDeserializeOptions);
 
                     if (jwtSettings != null)
                     {

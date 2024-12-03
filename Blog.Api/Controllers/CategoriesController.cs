@@ -1,4 +1,5 @@
 ﻿using Blog.Application.Dtos.Category;
+using Blog.Domain.Common;
 
 namespace Blog.Api.Controllers
 {
@@ -17,7 +18,7 @@ namespace Blog.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetByIdAsync([FromRoute] string id)
         {
-            return ReturnResult(await categoryService.GetByIdAsync(id), HttpStatusCode.OK);
+            return Result(await categoryService.GetByIdAsync(id), HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -28,7 +29,7 @@ namespace Blog.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] CategoryCreateRequest Category)
         {
-            return ReturnResult(await categoryService.CreateAsync(Category), HttpStatusCode.Created);
+            return Result(await categoryService.CreateAsync(Category), HttpStatusCode.Created);
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace Blog.Api.Controllers
                 return BadRequest($"Invalid param \'id\' between route and payload model!: From route: {id}, from payload: {request.Id}");
             }
 
-            return ReturnResult(await categoryService.UpdateAsync(request), HttpStatusCode.OK);
+            return Result(await categoryService.UpdateAsync(request), HttpStatusCode.OK);
         }
 
         /// <summary>
@@ -56,7 +57,19 @@ namespace Blog.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] string id)
         {
-            return ReturnResult(await categoryService.DeleteAsync(id), HttpStatusCode.OK);
+            return Result(await categoryService.DeleteAsync(id), HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Searches by keyword.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Results which matched/similar with the request's keyword.</returns>
+        [HttpPost("search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchAsync([FromBody] SearchRequest request)
+        {
+            return Result(await categoryService.SearchAsync(request), HttpStatusCode.OK);
         }
     }
 }

@@ -5,5 +5,6 @@ namespace Blog.Application.Interfaces.ExternalProviders
     public interface IIdentityApi
     {
         Task<AuthorDto?> GetUserByIdAsync(string id);
+        Task<IList<AuthorDto>?> GetUserByIdsAsync(IList<string> ids);
     }
 }

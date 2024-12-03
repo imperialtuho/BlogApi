@@ -4,6 +4,8 @@
     {
         public required string Title { get; set; }
 
+        public string Summary { get; set; }
+
         public required string Content { get; set; }
 
         public string? Url { get; set; }
@@ -13,8 +15,8 @@
 
         public string? CategoryId { get; set; }
 
-        // Navigation props
-        public Category? Category { get; set; }
+        // Navigation Properties
+        public ICollection<PostCategory> PostCategories { get; set; }
 
         public ICollection<Comment>? Comments { get; set; }
 
