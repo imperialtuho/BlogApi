@@ -10,8 +10,6 @@
 
         public string CoverImageUrl { get; set; }
 
-        public string Slug { get; set; }
-
         public int DisplayPosition { get; set; }
     }
 }

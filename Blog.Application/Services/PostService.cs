@@ -80,7 +80,7 @@ namespace Blog.Application.Services
             IQueryable<Post> predicate(IQueryable<Post> post) => post.Where(x => x.Content.Contains(request.Keyword));
             PaginatedResponse<Post> result = await postRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, predicate);
 
-            return new PaginatedResponse<PostDto>(result.Items.Adapt<IReadOnlyCollection<PostDto>>(), result.TotalCount, result.PageNumber, result.TotalPages);
+            return new PaginatedResponse<PostDto>(result.Data.Adapt<IReadOnlyCollection<PostDto>>(), result.TotalCount, result.PageNumber, result.TotalPages);
         }
 
         public async Task<PostDto> UpdateAsync(PostUpdateRequest request)

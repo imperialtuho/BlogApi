@@ -5,57 +5,138 @@ namespace Blog.Infrastructure.Repositories.ExternalProviders
 {
     public class FluentUriBuilder
     {
-        private readonly IList<string> _queryPathParams = new List<string>();
-        private readonly NameValueCollection _queryStringParams = new NameValueCollection();
-        private readonly string _uri;
+        private readonly HashSet<string> _pathSegments = []; // Use HashSet to prevent duplicate segments
+        private readonly NameValueCollection _queryParams = [];
+        private readonly string _baseUri;
 
-        public FluentUriBuilder(string uri)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FluentUriBuilder"/> class.
+        /// </summary>
+        /// <param name="baseUri">The base URI to build upon.</param>
+        public FluentUriBuilder(string baseUri)
         {
-            _uri = uri;
+            if (string.IsNullOrWhiteSpace(baseUri))
+                throw new ArgumentException("Base URI cannot be null or empty.", nameof(baseUri));
+
+            _baseUri = baseUri.TrimEnd('/');
         }
 
+        /// <summary>
+        /// Gets the fully constructed <see cref="Uri"/>.
+        /// </summary>
         public Uri Uri
         {
             get
             {
+                // Combine base URI and path segments
+                var combinedPath = string.Join("/", _pathSegments);
+                var fullPath = $"{_baseUri}/{combinedPath}".TrimEnd('/');
+
                 // Build query string
-                var pairs = from key in _queryStringParams.AllKeys
-                            from value in _queryStringParams.GetValues(key)
+                var pairs = from key in _queryParams.AllKeys
+                            from value in _queryParams.GetValues(key)!
                             select $"{HttpUtility.UrlEncode(key)}={HttpUtility.UrlEncode(value)}";
                 var queryString = string.Join("&", pairs);
-                var queryPath = string.Join("/", _queryPathParams);
-                if (!string.IsNullOrEmpty(queryPath))
-                {
-                    queryPath = queryPath.Insert(0, "/");
-                }
 
-                // Build complete uri
-                var builder = new UriBuilder(_uri + queryPath);
-                builder.Query = queryString;
-
-                return builder.Uri;
+                return new Uri($"{fullPath}?{queryString}".TrimEnd('?'));
             }
         }
 
-        public string QueryString => string.Join(" | ", _queryStringParams.AllKeys.Select(key => $"{key} {_queryStringParams[key]}"));
-
-        public FluentUriBuilder AddQueryStringParam(string name, object value)
+        /// <summary>
+        /// Adds or updates a single query string parameter.
+        /// </summary>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="value">The parameter value.</param>
+        /// <returns>The same <see cref="FluentUriBuilder"/> instance.</returns>
+        public FluentUriBuilder AddQueryParam(string name, object value)
         {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Query parameter name cannot be null or empty.", nameof(name));
+
             if (value != null)
+                _queryParams[name] = value.ToString(); // Overwrite if exists
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds or updates multiple query string parameters.
+        /// </summary>
+        /// <param name="parameters">A dictionary containing parameter names and values.</param>
+        /// <returns>The same <see cref="FluentUriBuilder"/> instance.</returns>
+        public FluentUriBuilder AddQueryParams(IDictionary<string, object> parameters)
+        {
+            if (parameters == null) return this;
+
+            foreach (var param in parameters.Where(p => p.Value != null))
             {
-                _queryStringParams.Add(name, value.ToString());
+                AddQueryParam(param.Key, param.Value); // Use AddQueryParam to prevent duplicates
             }
 
             return this;
         }
 
-        public FluentUriBuilder AppendToUri(object value)
+        /// <summary>
+        /// Appends a single path segment to the URI.
+        /// </summary>
+        /// <param name="segment">The path segment to append.</param>
+        /// <returns>The same <see cref="FluentUriBuilder"/> instance.</returns>
+        public FluentUriBuilder AppendPath(string segment)
         {
-            if (value != null && !string.IsNullOrEmpty(value.ToString()))
+            if (!string.IsNullOrEmpty(segment))
+                _pathSegments.Add(segment.Trim('/')); // Add to HashSet to avoid duplicates
+
+            return this;
+        }
+
+        /// <summary>
+        /// Appends multiple path segments to the URI.
+        /// </summary>
+        /// <param name="segments">The path segments to append.</param>
+        /// <returns>The same <see cref="FluentUriBuilder"/> instance.</returns>
+        public FluentUriBuilder AppendPaths(IEnumerable<string> segments)
+        {
+            if (segments != null)
             {
-                _queryPathParams.Add(value.ToString());
+                foreach (var segment in segments.Where(s => !string.IsNullOrEmpty(s)))
+                {
+                    _pathSegments.Add(segment.Trim('/')); // Add to HashSet to avoid duplicates
+                }
             }
 
+            return this;
+        }
+
+        /// <summary>
+        /// Removes a specific query parameter by name.
+        /// </summary>
+        /// <param name="name">The name of the query parameter to remove.</param>
+        /// <returns>The same <see cref="FluentUriBuilder"/> instance.</returns>
+        public FluentUriBuilder RemoveQueryParam(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return this;
+
+            _queryParams.Remove(name);
+            return this;
+        }
+
+        /// <summary>
+        /// Clears all query parameters.
+        /// </summary>
+        /// <returns>The same <see cref="FluentUriBuilder"/> instance.</returns>
+        public FluentUriBuilder ClearQueryParams()
+        {
+            _queryParams.Clear();
+            return this;
+        }
+
+        /// <summary>
+        /// Clears all path segments.
+        /// </summary>
+        /// <returns>The same <see cref="FluentUriBuilder"/> instance.</returns>
+        public FluentUriBuilder ClearPathSegments()
+        {
+            _pathSegments.Clear();
             return this;
         }
     }

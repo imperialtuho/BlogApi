@@ -1,4 +1,6 @@
-﻿namespace Blog.Application.Dtos.Category
+﻿using Blog.Domain.Extensions;
+
+namespace Blog.Application.Dtos.Category
 {
     public class CategoryUpdateRequest
     {
@@ -12,7 +14,7 @@
 
         public string CoverImageUrl { get; set; }
 
-        public string Slug { get; set; }
+        public string Slug => StringHelper.ToSlug(Title);
 
         public int DisplayPosition { get; set; }
     }
