@@ -1,5 +1,6 @@
 ﻿using Blog.Application.Dtos.Author;
 using Blog.Application.Dtos.Base;
+using Blog.Application.Dtos.Media;
 
 namespace Blog.Application.Dtos.Category
 {
@@ -13,7 +14,7 @@ namespace Blog.Application.Dtos.Category
 
         public string? Description { get; set; }
 
-        public string? CoverImageUrl { get; set; }
+        public IList<MediaDto>? Media { get; set; }
 
         public string Slug { get; set; }
 

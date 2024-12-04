@@ -1,27 +1,44 @@
-﻿namespace Blog.Domain.Entities
+﻿using Blog.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
+
+namespace Blog.Domain.Entities
 {
     public class Post : BaseEntity<string>
     {
-        public required string Title { get; set; }
+        public string Title { get; set; }
 
+        [MaxLength(500)]
         public string Summary { get; set; }
 
-        public required string Content { get; set; }
+        [MaxLength(400000)]
+        public string Content { get; set; }
 
-        public string? Url { get; set; }
+        public string Slug { get; set; }
+
+        public bool Featured { get; set; }
+
+        public bool Pinned { get; set; }
+
+        public bool CommentingEnabled { get; set; }
+
+        public int MinutesToRead { get; set; }
+
+        public string Status { get; set; } = nameof(PostStatus.Unknown);
+
+        public IList<string>? HashTags { get; set; }
 
         // Foreign Keys
-        public required string AuthorId { get; set; }
-
-        public string? CategoryId { get; set; }
+        public string AuthorId { get; set; }
 
         // Navigation Properties
-        public ICollection<PostCategory> PostCategories { get; set; }
+        public ICollection<PostCategory>? PostCategories { get; set; }
+
+        public ICollection<PostTag>? PostTags { get; set; }
 
         public ICollection<Comment>? Comments { get; set; }
 
-        public IList<string>? Tags { get; set; }
-
         public ICollection<Interaction>? Interactions { get; set; }
+
+        public ICollection<Media>? Media { get; set; }
     }
 }

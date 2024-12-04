@@ -1,10 +1,13 @@
-﻿using Blog.Application.Dtos.Post;
+﻿using Blog.Application.Dtos.Media;
+using Blog.Application.Dtos.Post;
 using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
 using Blog.Domain.Exceptions;
+using Blog.Domain.Extensions;
+using Blog.Domain.Helpers;
 using Mapster;
 using Microsoft.AspNetCore.Http;
 
@@ -15,7 +18,12 @@ namespace Blog.Application.Services
     /// </summary>
     /// <param name="postRepository">The postRepository.</param>
     /// <param name="identityApi">The identityApi.</param>
-    public class PostService(IPostRepository postRepository, ICategoryRepository categoryRepository, IIdentityApi identityApi, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), IPostService
+    public class PostService(IPostRepository postRepository,
+        ICategoryRepository categoryRepository,
+        IMediaRepository mediaRepository,
+        IIdentityApi identityApi,
+        IAssetApi assetApi,
+        IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), IPostService
     {
         public async Task<IList<string>> AssignCategoryToPostAsync(string id, IList<string> categoryIds)
         {
@@ -44,16 +52,35 @@ namespace Blog.Application.Services
             var post = new Post
             {
                 Title = request.Title,
+                Summary = request.Summary,
                 Content = request.Content,
-                Url = request.Url,
-                CategoryId = request.CategoryId,
-                AuthorId = request.AuthorId,
-                Tags = request.Tags
+                Slug = StringHelper.ToSlug(request.Title),
+                Featured = request.Featured,
+                Pinned = request.Pinned,
+                CommentingEnabled = request.CommentingEnabled,
+                MinutesToRead = ReadingTimeEstimatorHelper.EstimateMinutesToRead(request.Content),
+                Status = request.Status,
+                HashTags = request.HashTags,
+                AuthorId = request.AuthorId
             };
 
             Post newPost = await postRepository.AddWithSaveChangesAndReturnModelAsync(post);
 
-            return newPost.Adapt<PostDto>();
+            ICollection<Media> media = request.Media != null && request.Media.Count > 0 ? request.Media.Adapt<ICollection<Media>>() : [];
+
+            foreach (Media item in media)
+            {
+                item.InternalId = newPost.Id;
+            }
+
+            IList<MediaDto> mediaInformation = await assetApi.GetMediaInformationByIdsAsync(media.Select(m => m.AssetId!));
+
+            await mediaRepository.AddRangeAsync(media);
+
+            var result = newPost.Adapt<PostDto>();
+            result.Media = mediaInformation;
+
+            return result;
         }
 
         public async Task<bool> DeleteAsync(string id)
@@ -70,9 +97,16 @@ namespace Blog.Application.Services
 
         public async Task<PostDto> GetByIdAsync(string id)
         {
-            Post post = await postRepository.GetEntityWithRelationByIdAsync(id);
+            Post post = await postRepository.GetEntityWithRelationByIdAsync(id) ?? throw new NotFoundException($"No {nameof(Post)} was found by id:{id}");
 
-            return post.Adapt<PostDto>();
+            var result = post.Adapt<PostDto>();
+
+            if (post.Media != null && post.Media.Count > 0)
+            {
+                result.Media = await assetApi.GetMediaInformationByIdsAsync(post.Media.Select(m => m.AssetId!));
+            }
+
+            return result;
         }
 
         public async Task<PaginatedResponse<PostDto>> SearchAsync(SearchRequest request)

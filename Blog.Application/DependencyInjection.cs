@@ -1,4 +1,5 @@
-﻿using Blog.Application.Configurations.MappingProfiles.Mapster;
+﻿using Blog.Application.Configurations.MappingProfiles.AutoMapper;
+using Blog.Application.Configurations.MappingProfiles.Mapster;
 using Blog.Application.Configurations.Settings;
 using Blog.Application.Interfaces.Services;
 using Blog.Application.Services;
@@ -34,6 +35,7 @@ namespace Blog.Application
             config.Scan(Assembly.GetExecutingAssembly());
             services.AddSingleton(config);
             services.AddScoped<IMapper, ServiceMapper>();
+            services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
             services.AddResponseCompression(options =>
             {

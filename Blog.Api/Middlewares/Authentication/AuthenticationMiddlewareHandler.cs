@@ -39,7 +39,7 @@ namespace Blog.Api.Middlewares.Authentication
         /// <summary>
         /// The IdentityUrl.
         /// </summary>
-        public static string IdentityUrl { get; set; }
+        public static string? IdentityUrl { get; set; }
 
         /// <summary>
         /// The cacheKey.
@@ -57,6 +57,15 @@ namespace Blog.Api.Middlewares.Authentication
         private const string Bearer = nameof(Bearer);
 
         /// <summary>
+        /// Default JsonSerializerOptions.
+        /// </summary>
+        private readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true, // Optional: ignore case in property names
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+
+        /// <summary>
         /// Handle Authenticate Async.
         /// </summary>
         /// <returns>Task{AuthenticateResult}.</returns>
@@ -67,7 +76,7 @@ namespace Blog.Api.Middlewares.Authentication
                 return AuthenticateResult.Fail(Unauthorized);
             }
 
-            string authorizationHeader = value;
+            string? authorizationHeader = value;
 
             if (string.IsNullOrEmpty(authorizationHeader))
             {
@@ -169,13 +178,13 @@ namespace Blog.Api.Middlewares.Authentication
         /// Handle Get JwtSettings From Memorycache.
         /// </summary>
         /// <returns>JwtSettings.</returns>
-        public async Task<JwtSettings> GetJwtSettingsAsync()
+        public async Task<JwtSettings?> GetJwtSettingsAsync()
         {
             try
             {
                 ApplicationSettings appSettings = applicationSettings.Value;
 
-                if (cache.TryGetValue(CacheKey, out JwtSettings cacheSettings))
+                if (cache.TryGetValue(CacheKey, out JwtSettings? cacheSettings))
                 {
                     return cacheSettings;
                 }
@@ -195,14 +204,8 @@ namespace Blog.Api.Middlewares.Authentication
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var jsonDeserializeOptions = new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true, // Optional: ignore case in property names
-                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                    };
-
                     string settingsJson = await response.Content.ReadAsStringAsync();
-                    JwtSettings jwtSettings = JsonSerializer.Deserialize<JwtSettings>(settingsJson, jsonDeserializeOptions);
+                    JwtSettings? jwtSettings = JsonSerializer.Deserialize<JwtSettings>(settingsJson, JsonSerializerOptions);
 
                     if (jwtSettings != null)
                     {

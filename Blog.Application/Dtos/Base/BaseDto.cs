@@ -2,6 +2,8 @@
 {
     public class BaseDto
     {
+        public string Language { get; set; } = "en";
+
         public int? TenantId { get; set; }
 
         public DateTime? CreatedDate { get; set; }

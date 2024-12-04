@@ -29,11 +29,15 @@ namespace Blog.Application.Services
                 Title = request.Title,
                 Label = request.Label,
                 Description = request.Description,
-                CoverImageUrl = request.CoverImageUrl,
                 Slug = StringHelper.ToSlug(request.Title),
                 DisplayPosition = request.DisplayPosition,
                 UserId = LoginSession!.UserId
             };
+
+            if (request.Media != null && request.Media.Count > 0)
+            {
+                caterogy.Media = request.Media.Adapt<ICollection<Media>>();
+            }
 
             Category newCategory = await categoryRepository.AddWithSaveChangesAndReturnModelAsync(caterogy);
 

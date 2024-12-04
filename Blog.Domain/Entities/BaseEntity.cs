@@ -7,7 +7,12 @@ namespace Blog.Domain.Entities
         [Key]
         public TId Id { get; set; }
 
-        public int? TenantId { get; set; }
+        public string Language { get; set; } = "en";
+
+        /// <summary>
+        /// Route path.
+        /// </summary>
+        public string? UrlPath { get; set; }
 
         public DateTime? CreatedDate { get; set; }
 
@@ -16,6 +21,8 @@ namespace Blog.Domain.Entities
         public DateTime? ModifiedDate { get; set; }
 
         public string? ModifiedBy { get; set; }
+
+        public int? TenantId { get; set; }
 
         public bool IsDeleted { get; set; }
     }

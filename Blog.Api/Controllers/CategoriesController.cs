@@ -24,12 +24,12 @@ namespace Blog.Api.Controllers
         /// <summary>
         /// Creates Category.
         /// </summary>
-        /// <param name="Category">The Category.</param>
+        /// <param name="category">The Category.</param>
         /// <returns>ActionResult{CategoryDto}.</returns>
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] CategoryCreateRequest Category)
+        public async Task<IActionResult> CreateAsync([FromBody] CategoryCreateRequest category)
         {
-            return Result(await categoryService.CreateAsync(Category), HttpStatusCode.Created);
+            return Result(await categoryService.CreateAsync(category), HttpStatusCode.Created);
         }
 
         /// <summary>
