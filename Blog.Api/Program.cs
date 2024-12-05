@@ -6,9 +6,7 @@ using Blog.Domain.Constants;
 using Blog.Infrastructure;
 using Blog.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Logging;
 
 namespace Blog.Api
 {
@@ -43,7 +41,7 @@ namespace Blog.Api
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                string? assemblyName = typeof(Program).Assembly.GetName().Name;
+                string assemblyName = typeof(Program).Assembly.GetName().Name;
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(assemblyName));
             });
 

@@ -7,7 +7,7 @@
         Unpublished,
         Scheduled,
         Deleted,
-        InModeration,
-        InReview
+        InReview,
+        Craft
     }
 }

@@ -13,8 +13,12 @@ namespace Blog.Application.Interfaces.Services
 
         Task<PostDto> UpdateAsync(PostUpdateRequest request);
 
+        Task<bool> UpdateSatusAsync(string id, string status);
+
         Task<bool> DeleteAsync(string id);
 
         Task<IList<string>> AssignCategoryToPostAsync(string id, IList<string> categoryIds);
+
+        Task<IList<PostDto>> GetByStatusAndAuthorIdAsync(string status, string authorId);
     }
 }

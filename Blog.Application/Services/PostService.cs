@@ -1,10 +1,12 @@
-﻿using Blog.Application.Dtos.Media;
+﻿using Blog.Application.Dtos.Author;
+using Blog.Application.Dtos.Media;
 using Blog.Application.Dtos.Post;
 using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
+using Blog.Domain.Enums;
 using Blog.Domain.Exceptions;
 using Blog.Domain.Extensions;
 using Blog.Domain.Helpers;
@@ -25,13 +27,31 @@ namespace Blog.Application.Services
         IAssetApi assetApi,
         IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), IPostService
     {
+        private const int CategoryLimit = 10;
+
         public async Task<IList<string>> AssignCategoryToPostAsync(string id, IList<string> categoryIds)
         {
+            if (string.IsNullOrEmpty(id) || (categoryIds == null || categoryIds.Count == 0))
+            {
+                throw new ArgumentException($"{nameof(id)} or {nameof(categoryIds)} cannot be null");
+            }
+
+            Post post = await postRepository.GetEntityByIdAsync(id);
             IList<Category> categories = await categoryRepository.GetByIdsAsync(categoryIds);
+
+            if (post.PostCategories?.Count(p => categories.Select(c => c.Id).Equals(p.CategoryId)) > CategoryLimit)
+            {
+                throw new InvalidOperationException($"The post is exceeded the limit {CategoryLimit} categories");
+            }
 
             if (categories == null || categories.Count == 0)
             {
                 throw new NotFoundException($"There was no {nameof(Category)} found!");
+            }
+
+            if (!IsCurrentPerformingOperationValid(post.AuthorId))
+            {
+                throw new ForbiddenException($"You're not allowed to perform this task");
             }
 
             await postRepository.AssignCategoriesAsync(id, categoryIds);
@@ -43,11 +63,13 @@ namespace Blog.Application.Services
         {
             if (request == null)
             {
-                throw new InvalidOperationException($"{nameof(request)} cannot be null.");
+                throw new ArgumentException($"{nameof(request)} cannot be null.");
             }
 
+            ValidatePostStatus(request.Status);
+
             // Validates User before creating Post.
-            _ = await identityApi.GetUserByIdAsync(request.AuthorId) ?? throw new InvalidOperationException($"Invalid User Id: {request.AuthorId}, the user with provided id could not be found!");
+            _ = await identityApi.GetUserByIdAsync(request.AuthorId) ?? throw new NotFoundException($"Invalid User Id: {request.AuthorId}, the user with provided id could not be found!");
 
             var post = new Post
             {
@@ -87,7 +109,7 @@ namespace Blog.Application.Services
         {
             Post post = await postRepository.GetEntityByIdAsync(id);
 
-            if (IsActionPerformByAdmin(LoginSession) || post.AuthorId.Equals(LoginSession?.UserId.ToString()))
+            if (IsCurrentPerformingOperationValid(post.AuthorId))
             {
                 return await postRepository.DeleteAndSaveChangesAsync(post);
             }
@@ -109,9 +131,34 @@ namespace Blog.Application.Services
             return result;
         }
 
+        public async Task<IList<PostDto>> GetByStatusAndAuthorIdAsync(string status, string authorId)
+        {
+            ValidatePostStatus(status);
+
+            IList<Post> posts = await postRepository.GetByStatusAndAuthorIdAsync(status, authorId);
+
+            if (posts == null || posts.Count == 0)
+            {
+                throw new NotFoundException($"No {nameof(Post)} was found.");
+            }
+
+            var result = posts.Adapt<IList<PostDto>>();
+
+            AuthorDto author = await identityApi.GetUserByIdAsync(authorId) ?? throw new NotFoundException($"{nameof(author)} is not found!");
+
+            foreach (PostDto post in result)
+            {
+                post.Author = author;
+            }
+
+            return result;
+        }
+
         public async Task<PaginatedResponse<PostDto>> SearchAsync(SearchRequest request)
         {
-            IQueryable<Post> predicate(IQueryable<Post> post) => post.Where(x => x.Content.Contains(request.Keyword));
+            IQueryable<Post> predicate(IQueryable<Post> post) => post.Where(x => x.Content.Contains(request.Keyword)
+                                                              || (!IsActionPerformByAdmin(LoginSession) && !x.Status.Equals(nameof(PostStatus.Craft))));
+
             PaginatedResponse<Post> result = await postRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, predicate);
 
             return new PaginatedResponse<PostDto>(result.Data.Adapt<IReadOnlyCollection<PostDto>>(), result.TotalCount, result.PageNumber, result.TotalPages);
@@ -119,14 +166,43 @@ namespace Blog.Application.Services
 
         public async Task<PostDto> UpdateAsync(PostUpdateRequest request)
         {
+            ValidatePostStatus(request.Status);
             Post post = request.Adapt<Post>();
 
-            if (IsActionPerformByAdmin(LoginSession) || post.AuthorId.Equals(LoginSession?.UserId.ToString()))
+            if (IsCurrentPerformingOperationValid(post.AuthorId))
             {
                 return (await postRepository.UpdateWithSaveChangesAndReturnModelAsync(post)).Adapt<PostDto>();
             }
 
             throw new ForbiddenException($"You're not allowed to update this {nameof(Post)}, reason: {nameof(Post)} is not belong to current user");
+        }
+
+        public async Task<bool> UpdateSatusAsync(string id, string status)
+        {
+            ValidatePostStatus(status);
+
+            Post post = await postRepository.GetEntityByIdAsync(id) ?? throw new NotFoundException($"No {nameof(Post)} was found!");
+
+            if (!IsActionPerformByAdmin(LoginSession) && post.Status.Equals(nameof(PostStatus.InReview)))
+            {
+                throw new InvalidOperationException($"The {nameof(Post)} is currently in review, contact admin for approval");
+            }
+
+            if (IsCurrentPerformingOperationValid(post.Id))
+            {
+                post.Status = status;
+                return await postRepository.UpdateAndSaveChangesAsync(post);
+            }
+
+            throw new ForbiddenException($"You're not allowed to update this {nameof(Post)}, reason: {nameof(Post)} is not belong to current user");
+        }
+
+        private static void ValidatePostStatus(string status)
+        {
+            if (!Enum.TryParse<PostStatus>(status, ignoreCase: true, out _))
+            {
+                throw new ArgumentException($"Invalid post status: {status}");
+            }
         }
     }
 }

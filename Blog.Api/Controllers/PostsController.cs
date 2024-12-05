@@ -71,5 +71,23 @@ namespace Blog.Api.Controllers
         {
             return Result(await postService.SearchAsync(request), HttpStatusCode.OK);
         }
+
+        /// <summary>
+        /// Gets all posts by status belong to author id.
+        /// </summary>
+        /// <param name="status">The status.</param>
+        /// <param name="authorId">The authorId.</param>
+        /// <returns>A list of posts with the provided status blongs to author.</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetByStatusAndUserIdAsync([FromQuery] string status, [FromQuery] string authorId)
+        {
+            return Result(await postService.GetByStatusAndAuthorIdAsync(status, authorId));
+        }
+
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateStatusAsync(string id, string status)
+        {
+            return Result(await postService.UpdateSatusAsync(id, status));
+        }
     }
 }

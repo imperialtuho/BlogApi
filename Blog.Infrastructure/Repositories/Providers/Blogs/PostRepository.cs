@@ -36,5 +36,10 @@ namespace Blog.Infrastructure.Repositories.Providers.Blogs
         {
             return await _dbContext.Posts.Where(p => postIds.Contains(p.Id) && !p.IsDeleted).ToListAsync();
         }
+
+        async Task<IList<Post>> IPostRepository.GetByStatusAndAuthorIdAsync(string status, string authorId)
+        {
+            return await _dbContext.Posts.Where(p => p.Status.Equals(status) && p.AuthorId == authorId).ToListAsync();
+        }
     }
 }

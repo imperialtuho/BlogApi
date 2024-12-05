@@ -1,4 +1,5 @@
-﻿using Blog.Domain.Entities;
+﻿using Blog.Application.Dtos.Post;
+using Blog.Domain.Entities;
 
 namespace Blog.Application.Interfaces.Repositories
 {
@@ -7,5 +8,7 @@ namespace Blog.Application.Interfaces.Repositories
         Task<IList<Post>> GetByIdsAsync(IList<string> postIds);
 
         Task AssignCategoriesAsync(string postId, IList<string> categoryIds);
+
+        Task<IList<Post>> GetByStatusAndAuthorIdAsync(string status, string authorId);
     }
 }

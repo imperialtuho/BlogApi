@@ -51,7 +51,7 @@ namespace Blog.Application.Services
         {
             Category category = await categoryRepository.GetEntityByIdAsync(id);
 
-            if (IsActionPerformByAdmin(LoginSession) || (!string.IsNullOrEmpty(category.UserId) && (LoginSession?.UserId.Equals(category.UserId) ?? false)))
+            if (IsCurrentPerformingOperationValid(category.UserId))
             {
                 return await categoryRepository.DeleteAndSaveChangesAsync(category);
             }
@@ -107,7 +107,7 @@ namespace Blog.Application.Services
 
             existCategory = request.Adapt(existCategory);
 
-            if (IsActionPerformByAdmin(LoginSession) || (!string.IsNullOrEmpty(existCategory.UserId) && (LoginSession?.UserId.Equals(existCategory.UserId) ?? false)))
+            if (IsCurrentPerformingOperationValid(existCategory.UserId))
             {
                 AuthorDto? author = await identityApi.GetUserByIdAsync(existCategory.UserId) ?? throw new InvalidOperationException($"Author is not found by id {existCategory.UserId}");
                 CategoryDto result = (await categoryRepository.UpdateWithSaveChangesAndReturnModelAsync(existCategory)).Adapt<CategoryDto>();
