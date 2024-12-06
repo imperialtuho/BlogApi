@@ -1,4 +1,5 @@
-﻿using Blog.Application.Dtos.Category;
+﻿using Asp.Versioning;
+using Blog.Application.Dtos.Category;
 using Blog.Domain.Common;
 
 namespace Blog.Api.Controllers
@@ -7,6 +8,8 @@ namespace Blog.Api.Controllers
     /// The CategoriesController.
     /// </summary>
     /// <param name="categoryService">The categoryService.</param>
+    [ApiVersion("1.0")]
+    [Route("api/v{version:ApiVersion}/[controller]")]
     public class CategoriesController(ICategoryService categoryService) : BaseController
     {
         /// <summary>

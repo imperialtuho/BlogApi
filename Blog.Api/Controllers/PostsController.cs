@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Blog.Application.Dtos.Post;
 using Blog.Domain.Common;
 
@@ -7,6 +8,8 @@ namespace Blog.Api.Controllers
     /// The PostsController.
     /// </summary>
     /// <param name="postService">The blogService.</param>
+    [ApiVersion("1.0")]
+    [Route("api/v{version:ApiVersion}/[controller]")]
     public class PostsController(IPostService postService) : BaseController
     {
         /// <summary>
