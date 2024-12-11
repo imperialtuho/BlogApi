@@ -1,11 +1,10 @@
 using Blog.Api.Extensions;
+using Blog.Api.Middlewares.Authentication;
 using Blog.Api.Middlewares.ExceptionHandler;
 using Blog.Application;
 using Blog.Application.Configurations.Settings;
 using Blog.Domain.Constants;
 using Blog.Infrastructure;
-using Blog.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
@@ -59,14 +58,7 @@ namespace Blog.Api
             services.AddInfrastructureServices(configuration);
             services.AddApplicationServices(configuration);
             services.AddApiServices(configuration);
-            //services.AddJwtServices(configuration);
-
-            // Register DbContext
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                string? assemblyName = typeof(Program).Assembly.GetName().Name;
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(assemblyName));
-            });
+            services.AddJwtServices(configuration);
 
             // Add Controllers and Swagger
             services.AddControllers();

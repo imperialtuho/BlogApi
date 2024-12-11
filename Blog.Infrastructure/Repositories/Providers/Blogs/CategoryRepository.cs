@@ -22,7 +22,7 @@ namespace Blog.Infrastructure.Repositories.Providers.Blogs
 
         public async Task<Category?> GetByNameAsync(string name, string? userId = null, bool isGlobal = false)
         {
-            Expression<Func<Category, bool>> predicate = category => (category.Title.Equals(name) || category.Label.Equals(name)) && (userId == null || userId.Equals(category.UserId));
+            Expression<Func<Category, bool>> predicate = category => (category.Title.Equals(name) || category.Label.Equals(name)) && (userId == null || userId.Equals(category.AuthorId));
 
             return await _dbContext.Categories.FirstOrDefaultAsync(predicate);
         }

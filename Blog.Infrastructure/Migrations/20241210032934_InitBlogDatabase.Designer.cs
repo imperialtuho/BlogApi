@@ -9,18 +9,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Blog.Api.Migrations
+namespace Blog.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241203032419_InitPostCategoriesRelationship")]
-    partial class InitPostCategoriesRelationship
+    [Migration("20241210032934_InitBlogDatabase")]
+    partial class InitBlogDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -29,9 +29,6 @@ namespace Blog.Api.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CoverImageUrl")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -52,6 +49,10 @@ namespace Blog.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -67,6 +68,9 @@ namespace Blog.Api.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UrlPath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
@@ -96,6 +100,10 @@ namespace Blog.Api.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -108,6 +116,9 @@ namespace Blog.Api.Migrations
 
                     b.Property<int?>("TenantId")
                         .HasColumnType("int");
+
+                    b.Property<string>("UrlPath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -138,6 +149,10 @@ namespace Blog.Api.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -155,6 +170,9 @@ namespace Blog.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UrlPath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -166,6 +184,57 @@ namespace Blog.Api.Migrations
                     b.ToTable("Interactions");
                 });
 
+            modelBuilder.Entity("Blog.Domain.Entities.Media", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AssetId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CategoryId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InternalId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UrlPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("Media");
+                });
+
             modelBuilder.Entity("Blog.Domain.Entities.Post", b =>
                 {
                     b.Property<string>("Id")
@@ -175,11 +244,12 @@ namespace Blog.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CategoryId")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("CommentingEnabled")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Content")
                         .IsRequired()
+                        .HasMaxLength(400000)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreatedBy")
@@ -188,8 +258,21 @@ namespace Blog.Api.Migrations
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("Featured")
+                        .HasColumnType("bit");
+
+                    b.PrimitiveCollection<string>("HashTags")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MinutesToRead")
+                        .HasColumnType("int");
 
                     b.Property<string>("ModifiedBy")
                         .HasColumnType("nvarchar(max)");
@@ -197,12 +280,21 @@ namespace Blog.Api.Migrations
                     b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Summary")
+                    b.Property<bool>("Pinned")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Tags")
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int?>("TenantId")
                         .HasColumnType("int");
@@ -211,7 +303,7 @@ namespace Blog.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Url")
+                    b.Property<string>("UrlPath")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -232,6 +324,64 @@ namespace Blog.Api.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("PostCategories");
+                });
+
+            modelBuilder.Entity("Blog.Domain.Entities.PostTag", b =>
+                {
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TagId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("PostId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("PostTag");
+                });
+
+            modelBuilder.Entity("Blog.Domain.Entities.Tag", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UrlPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tag");
                 });
 
             modelBuilder.Entity("Blog.Domain.Entities.Comment", b =>
@@ -256,6 +406,17 @@ namespace Blog.Api.Migrations
                     b.Navigation("Post");
                 });
 
+            modelBuilder.Entity("Blog.Domain.Entities.Media", b =>
+                {
+                    b.HasOne("Blog.Domain.Entities.Category", null)
+                        .WithMany("Media")
+                        .HasForeignKey("CategoryId");
+
+                    b.HasOne("Blog.Domain.Entities.Post", null)
+                        .WithMany("Media")
+                        .HasForeignKey("PostId");
+                });
+
             modelBuilder.Entity("Blog.Domain.Entities.PostCategory", b =>
                 {
                     b.HasOne("Blog.Domain.Entities.Category", "Category")
@@ -275,8 +436,29 @@ namespace Blog.Api.Migrations
                     b.Navigation("Post");
                 });
 
+            modelBuilder.Entity("Blog.Domain.Entities.PostTag", b =>
+                {
+                    b.HasOne("Blog.Domain.Entities.Post", "Post")
+                        .WithMany("PostTags")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Blog.Domain.Entities.Tag", "Tag")
+                        .WithMany("PostTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("Blog.Domain.Entities.Category", b =>
                 {
+                    b.Navigation("Media");
+
                     b.Navigation("PostCategories");
                 });
 
@@ -286,7 +468,16 @@ namespace Blog.Api.Migrations
 
                     b.Navigation("Interactions");
 
+                    b.Navigation("Media");
+
                     b.Navigation("PostCategories");
+
+                    b.Navigation("PostTags");
+                });
+
+            modelBuilder.Entity("Blog.Domain.Entities.Tag", b =>
+                {
+                    b.Navigation("PostTags");
                 });
 #pragma warning restore 612, 618
         }

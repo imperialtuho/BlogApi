@@ -27,6 +27,8 @@ namespace Blog.Domain.Entities
 
         public IList<string>? HashTags { get; set; }
 
+        public string? CoverImageUrl { get; set; }
+
         // Foreign Keys
         public string AuthorId { get; set; }
 
@@ -38,7 +40,5 @@ namespace Blog.Domain.Entities
         public ICollection<Comment>? Comments { get; set; }
 
         public ICollection<Interaction>? Interactions { get; set; }
-
-        public ICollection<Media>? Media { get; set; }
     }
 }

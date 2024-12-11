@@ -31,7 +31,7 @@ namespace Blog.Application.Services
                 Description = request.Description,
                 Slug = StringHelper.ToSlug(request.Title),
                 DisplayPosition = request.DisplayPosition,
-                UserId = LoginSession!.UserId
+                AuthorId = LoginSession!.UserId
             };
 
             if (request.Media != null && request.Media.Count > 0)
@@ -51,7 +51,7 @@ namespace Blog.Application.Services
         {
             Category category = await categoryRepository.GetEntityByIdAsync(id);
 
-            if (IsCurrentPerformingOperationValid(category.UserId))
+            if (IsCurrentPerformingOperationValid(category.AuthorId))
             {
                 return await categoryRepository.DeleteAndSaveChangesAsync(category);
             }
@@ -62,7 +62,7 @@ namespace Blog.Application.Services
         public async Task<CategoryDto> GetByIdAsync(string id)
         {
             Category category = await categoryRepository.GetEntityWithRelationByIdAsync(id);
-            AuthorDto? author = await identityApi.GetUserByIdAsync(category.UserId) ?? throw new InvalidOperationException($"Invalid AuthorId: {category.UserId}, the user with provided id could not be found!");
+            AuthorDto? author = await identityApi.GetUserByIdAsync(category.AuthorId) ?? throw new InvalidOperationException($"Invalid AuthorId: {category.AuthorId}, the user with provided id could not be found!");
 
             var result = category.Adapt<CategoryDto>();
             result.Author = author;
@@ -88,12 +88,12 @@ namespace Blog.Application.Services
 
             PaginatedResponse<Category> categories = await categoryRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, predicate);
 
-            IList<AuthorDto>? authors = await identityApi.GetUserByIdsAsync(categories.Data.Select(cat => cat.UserId).ToList()) ?? throw new InvalidOperationException("Couldn't be found any Authors following found categories");
+            IList<AuthorDto>? authors = await identityApi.GetUserByIdsAsync(categories.Data.Select(cat => cat.AuthorId).ToList()) ?? throw new InvalidOperationException("Couldn't be found any Authors following found categories");
 
             ImmutableList<CategoryDto> result = categories.Data.AsEnumerable().Select(category =>
             {
                 var dto = category.Adapt<CategoryDto>();
-                dto.Author = authors.First(a => a.Id.Equals(category.UserId));
+                dto.Author = authors.First(a => a.Id.Equals(category.AuthorId));
 
                 return dto;
             }).ToImmutableList();
@@ -107,9 +107,9 @@ namespace Blog.Application.Services
 
             existCategory = request.Adapt(existCategory);
 
-            if (IsCurrentPerformingOperationValid(existCategory.UserId))
+            if (IsCurrentPerformingOperationValid(existCategory.AuthorId))
             {
-                AuthorDto? author = await identityApi.GetUserByIdAsync(existCategory.UserId) ?? throw new InvalidOperationException($"Author is not found by id {existCategory.UserId}");
+                AuthorDto? author = await identityApi.GetUserByIdAsync(existCategory.AuthorId) ?? throw new InvalidOperationException($"Author is not found by id {existCategory.AuthorId}");
                 CategoryDto result = (await categoryRepository.UpdateWithSaveChangesAndReturnModelAsync(existCategory)).Adapt<CategoryDto>();
                 result.Author = author;
 

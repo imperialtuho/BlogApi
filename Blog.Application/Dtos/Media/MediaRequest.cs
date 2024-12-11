@@ -3,7 +3,5 @@
     public class MediaRequest
     {
         public string? AssetId { get; set; }
-
-        public string? InternalId { get; set; }
     }
 }

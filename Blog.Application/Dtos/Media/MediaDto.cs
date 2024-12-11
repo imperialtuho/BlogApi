@@ -18,6 +18,6 @@ namespace Blog.Application.Dtos.Media
 
         public int? Width { get; set; }
 
-        public string Type { get; set; }
+        public string ContentType { get; set; }
     }
 }
