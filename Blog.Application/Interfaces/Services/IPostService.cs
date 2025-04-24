@@ -17,7 +17,9 @@ namespace Blog.Application.Interfaces.Services
 
         Task<bool> DeleteAsync(string id);
 
-        Task<IList<string>> AssignCategoryToPostAsync(string id, IList<string> categoryIds);
+        Task<bool> AssignCategoriesAsync(string id, IList<string> categoryIds);
+
+        Task<bool> UnAssignCategoriesAsync(string id, IList<string> categoryIds);
 
         Task<IList<PostDto>> GetByStatusAndAuthorIdAsync(string status, string authorId);
     }

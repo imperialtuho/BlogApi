@@ -5,13 +5,14 @@ using Blog.Infrastructure.Configurations;
 using Blog.Infrastructure.Database;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace Blog.Infrastructure.Repositories.Providers.Blogs
 {
     public class CategoryRepository : DbSqlConnectionEFRepositoryBase<ApplicationDbContext, Category>, ICategoryRepository
     {
-        public CategoryRepository(ISqlConnectionFactory sqlConnectionFactory, IHttpContextAccessor httpContextAccessor) : base(sqlConnectionFactory, httpContextAccessor)
+        public CategoryRepository(ISqlConnectionFactory sqlConnectionFactory, IHttpContextAccessor httpContextAccessor, ILogger<CategoryRepository> logger) : base(sqlConnectionFactory, httpContextAccessor, logger)
         {
         }
 

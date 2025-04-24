@@ -1,6 +1,4 @@
-﻿using Blog.Application.Dtos.Media;
-
-namespace Blog.Application.Dtos.Category
+﻿namespace Blog.Application.Dtos.Category
 {
     public class CategoryCreateRequest
     {
@@ -10,7 +8,7 @@ namespace Blog.Application.Dtos.Category
 
         public string Description { get; set; }
 
-        public IList<MediaRequest>? Media { get; set; }
+        public string ImageUrl { get; set; }
 
         public int DisplayPosition { get; set; }
     }

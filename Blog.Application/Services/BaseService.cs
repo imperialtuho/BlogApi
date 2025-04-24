@@ -1,75 +1,95 @@
-﻿using Blog.Domain.Common;
+﻿using AutoMapper;
+using Blog.Domain.Common;
+using Blog.Domain.Exceptions;
 using Blog.Domain.Extensions;
 using Blog.Domain.SharedKernel;
 using Microsoft.AspNetCore.Http;
 
 namespace Blog.Application.Services
 {
+    /// <summary>
+    /// Provides common service functionality for the application, including user session management, tenant identification, and admin checks.
+    /// </summary>
+    /// <remarks>
+    /// This base service class serves as a foundation for other services in the application. It allows derived services to manage user sessions,
+    /// tenant identification, and access control, specifically for checking if actions are performed by admin users.
+    /// It also provides utility methods for validating whether the current operation is allowed for the current user based on ownership.
+    /// </remarks>
     public class BaseService
     {
-        private UserSession? _userSession;
         protected readonly IHttpContextAccessor _httpContextAccessor;
+        protected readonly IMapper _mapper;
 
-        public BaseService(IHttpContextAccessor httpContextAccessor)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseService"/> class.
+        /// </summary>
+        /// <param name="httpContextAccessor">The HTTP context accessor for retrieving user session and tenant information.</param>
+        /// <param name="mapper">The AutoMapper instance for mapping objects.</param>
+        public BaseService(IHttpContextAccessor httpContextAccessor, IMapper mapper)
         {
             _httpContextAccessor = httpContextAccessor;
+            _mapper = mapper;
         }
 
-        protected int? TenantIdentify => _httpContextAccessor.GetTenantIdentify();
-        public int? TenantId => LoginSession?.TenantId ?? TenantIdentify;
+        /// <summary>
+        /// Retrieves the current user session associated with the active HTTP request.
+        /// </summary>
+        /// <value>
+        /// Returns an instance of <see cref="UserSession"/> containing information about the authenticated user.
+        /// </value>
+        /// <remarks>
+        /// This property provides access to user-specific session data extracted from the HTTP context,
+        /// typically used for authentication, authorization, or auditing purposes.
+        /// </remarks>
+        public UserSession LoginSession => _httpContextAccessor.GetUserSession();
 
-        public UserSession? LoginSession
+        /// <summary>
+        /// Determines whether the action is performed by an admin user.
+        /// </summary>
+        /// <param name="currentUser">The current user session. If null, assumes a non-admin user.</param>
+        /// <param name="tenantId">Optional tenant ID to check admin scope.</param>
+        /// <returns>True if the user is a SuperAdmin or an Admin in the specified tenant; otherwise, false.</returns>
+        /// <remarks>
+        /// A user is considered an admin if they have the 'SuperAdmin' role, or the 'Admin' role within the same tenant.
+        /// </remarks>
+        protected static bool IsActionPerformedByAdmin(UserSession? currentUser = null, int? tenantId = null)
         {
-            get => _userSession ?? _httpContextAccessor?.GetUserSession();
-            set
-            {
-                _userSession = value;
-            }
-        }
-
-        protected static bool IsActionPerformByAdmin(UserSession? currentUser = null)
-        {
-            if (currentUser is null)
-            {
+            if (currentUser is null || currentUser.Roles is null)
                 return false;
-            }
 
-            if (currentUser.Roles is not null && (currentUser.Roles.Exists(r => r.Contains(ApplicationDefaultRoleValue.SuperAdmin) || r.Contains(ApplicationDefaultRoleValue.Admin))))
-            {
+            // Check SuperAdmin role
+            if (currentUser.Roles.Any(r => r == ApplicationDefaultRoleValue.SuperAdmin))
                 return true;
-            }
+
+            // Check Admin role with matching tenant
+            if (currentUser.Roles.Any(r => r == ApplicationDefaultRoleValue.Admin) && currentUser.TenantId == tenantId)
+                return true;
 
             return false;
         }
 
         /// <summary>
-        /// Checks the action is being performed by admin or its owner.
+        /// Validates whether the current user is authorized to perform an operation based on role or ownership.
         /// </summary>
-        /// <param name="ownerId">The data's ownerId.</param>
-        /// <returns>True if action is performed by admin or the ownerId matched with its own data.</returns>
-        protected bool IsCurrentPerformingOperationValid(string? ownerId = null)
+        /// <param name="ownerId">The ID of the resource owner.</param>
+        /// <param name="tenantId">The tenant ID to validate against for tenant-scoped admin access.</param>
+        /// <exception cref="ForbiddenException">Thrown when the user is unauthorized to perform the operation.</exception>
+        /// <remarks>
+        /// An action is allowed if the user is a SuperAdmin, an Admin within the same tenant, or the resource owner.
+        /// </remarks>
+        protected void CheckingCurrentPerformingOperation(string? ownerId = null, int? tenantId = null)
         {
-            UserSession? loginSession = LoginSession;
+            UserSession? loginSession = LoginSession ?? throw new ForbiddenException();
 
-            // if the action performs by admins -> valid
-            if (loginSession is not null && IsActionPerformByAdmin(loginSession))
-            {
-                return true;
-            }
+            // Admin check
+            if (IsActionPerformedByAdmin(loginSession, tenantId))
+                return;
 
-            // ownerId is null -> invalid
-            if (ownerId == null)
-            {
-                return false;
-            }
+            // Ownership check
+            if (!string.IsNullOrEmpty(ownerId) && loginSession.UserId == ownerId && loginSession.TenantId == tenantId)
+                return;
 
-            // Checks owner's data to its action. If owner's data matched with the provided ownerId -> valid
-            if (!string.IsNullOrEmpty(ownerId) && ownerId.Equals(loginSession?.UserId))
-            {
-                return true;
-            }
-
-            return false;
+            throw new ForbiddenException();
         }
     }
 }

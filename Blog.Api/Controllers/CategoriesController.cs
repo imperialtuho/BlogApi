@@ -64,7 +64,7 @@ namespace Blog.Api.Controllers
         }
 
         /// <summary>
-        /// Searches by keyword.
+        /// Searches categories.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Results which matched/similar with the request's keyword.</returns>

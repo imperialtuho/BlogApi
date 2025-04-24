@@ -3,6 +3,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Blog.Infrastructure.Database
 {
+    /// <summary>
+    /// Represents the application's Entity Framework Core database context.
+    /// </summary>
+    /// <remarks>
+    /// This class serves as the primary interface to the database, inheriting from <see cref="DbContext"/>.
+    /// It defines the application's data model and exposes DbSets for each entity type that is part of the
+    /// data model, enabling CRUD operations and queries via Entity Framework Core.
+    /// </remarks>
     public class ApplicationDbContext : DbContext
     {
         public DbSet<Post> Posts { get; set; }
@@ -18,10 +26,27 @@ namespace Blog.Infrastructure.Database
         public ApplicationDbContext()
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the ApplicationDbContext with database options.
+        /// </summary>
+        /// <param name="options">Database context options.</param>
+        /// <remarks>
+        /// This constructor is used when configuring the DbContext with specific options, such as connection strings
+        /// or other configurations required for establishing a connection to the database.
+        /// </remarks>
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
 
+        /// <summary>
+        /// Configures the entity model using Fluent API.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder used to configure entity relationships.</param>
+        /// <remarks>
+        /// The method is used to configure the entity model using Fluent API, allowing the customization of
+        /// entity relationships, table names, indexes, constraints, etc. The method uses reflection to apply
+        /// configurations from the current assembly, making it easier to manage entity configurations in a modular way.
+        /// </remarks>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Many-to-Many

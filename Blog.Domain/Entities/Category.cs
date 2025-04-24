@@ -1,4 +1,6 @@
-﻿namespace Blog.Domain.Entities
+﻿using Blog.Domain.Helpers;
+
+namespace Blog.Domain.Entities
 {
     public class Category : BaseEntity<string>
     {
@@ -8,7 +10,7 @@
 
         public string? Description { get; set; }
 
-        public string Slug { get; set; }
+        public string Slug => StringHelper.ToSlug(Title);
 
         public int DisplayPosition { get; set; }
 

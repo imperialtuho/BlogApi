@@ -1,6 +1,4 @@
-﻿using Blog.Application.Dtos.Author;
-using Blog.Application.Dtos.Base;
-using Blog.Application.Dtos.Media;
+﻿using Blog.Application.Dtos.Base;
 
 namespace Blog.Application.Dtos.Category
 {
@@ -14,14 +12,12 @@ namespace Blog.Application.Dtos.Category
 
         public string? Description { get; set; }
 
-        public IList<MediaDto>? Media { get; set; }
+        public string ImageUrl { get; set; }
 
         public string Slug { get; set; }
 
         public int DisplayPosition { get; set; }
 
         public long PostCount { get; set; }
-
-        public AuthorDto? Author { get; set; }
     }
 }

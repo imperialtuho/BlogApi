@@ -1,5 +1,4 @@
-﻿using Blog.Application.Dtos.Media;
-using Blog.Domain.Extensions;
+﻿using Blog.Domain.Helpers;
 
 namespace Blog.Application.Dtos.Category
 {
@@ -13,7 +12,7 @@ namespace Blog.Application.Dtos.Category
 
         public string Description { get; set; }
 
-        public IList<MediaRequest>? Media { get; set; }
+        public string ImageUrl { get; set; }
 
         public string Slug => StringHelper.ToSlug(Title);
 

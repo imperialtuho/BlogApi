@@ -87,10 +87,40 @@ namespace Blog.Api.Controllers
             return Result(await postService.GetByStatusAndAuthorIdAsync(status, authorId));
         }
 
+        /// <summary>
+        /// Updates post's status.
+        /// </summary>
+        /// <param name="id">The post id.</param>
+        /// <param name="status">The status.</param>
+        /// <returns>True/False based on update action.</returns>
         [HttpPatch("{id}/status")]
-        public async Task<IActionResult> UpdateStatusAsync(string id, string status)
+        public async Task<IActionResult> UpdateStatusAsync([FromRoute] string id, [FromBody] string status)
         {
             return Result(await postService.UpdateSatusAsync(id, status));
+        }
+
+        /// <summary>
+        /// Assignes categories to a post.
+        /// </summary>
+        /// <param name="id">The post id.</param>
+        /// <param name="categoryIds">The category ids.</param>
+        /// <returns>True/False based on assign action.</returns>
+        [HttpPut("{id}/assign-categories")]
+        public async Task<bool> AssignCategoriesAsync(string id, [FromBody] IList<string> categoryIds)
+        {
+            return await postService.AssignCategoriesAsync(id, categoryIds);
+        }
+
+        /// <summary>
+        /// Unassignes categories from a post.
+        /// </summary>
+        /// <param name="id">The post id.</param>
+        /// <param name="categoryIds">The category ids.</param>
+        /// <returns>True/False based on unassign action.</returns>
+        [HttpPut("{id}/unassign-categories")]
+        public async Task<bool> UnAssignCategoriesAsync(string id, [FromBody] IList<string> categoryIds)
+        {
+            return await postService.UnAssignCategoriesAsync(id, categoryIds);
         }
     }
 }

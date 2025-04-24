@@ -1,4 +1,6 @@
 ﻿using Blog.Domain.Enums;
+using Blog.Domain.Extensions;
+using Blog.Domain.Helpers;
 using System.ComponentModel.DataAnnotations;
 
 namespace Blog.Domain.Entities
@@ -13,15 +15,11 @@ namespace Blog.Domain.Entities
         [MaxLength(400000)]
         public string Content { get; set; }
 
-        public string Slug { get; set; }
-
         public bool Featured { get; set; }
 
         public bool Pinned { get; set; }
 
         public bool CommentingEnabled { get; set; }
-
-        public int MinutesToRead { get; set; }
 
         public string Status { get; set; } = nameof(PostStatus.Unknown);
 

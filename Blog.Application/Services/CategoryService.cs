@@ -1,19 +1,22 @@
-﻿using Blog.Application.Dtos.Author;
+﻿using AutoMapper;
 using Blog.Application.Dtos.Category;
-using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Application.Interfaces.Services;
 using Blog.Domain.Common;
 using Blog.Domain.Entities;
 using Blog.Domain.Exceptions;
-using Blog.Domain.Extensions;
-using Mapster;
+using Blog.Domain.Helpers;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Immutable;
 
 namespace Blog.Application.Services
 {
-    public class CategoryService(ICategoryRepository categoryRepository, IIdentityApi identityApi, IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), ICategoryService
+    /// <summary>
+    /// The category service.
+    /// </summary>
+    /// <param name="categoryRepository">The categoryRepository.</param>
+    /// <param name="httpContextAccessor">The httpContextAccessor.</param>
+    /// <param name="mapper">The mapper.</param>
+    public class CategoryService(ICategoryRepository categoryRepository, IHttpContextAccessor httpContextAccessor, IMapper mapper) : BaseService(httpContextAccessor, mapper), ICategoryService
     {
         public async Task<CategoryDto> CreateAsync(CategoryCreateRequest request)
         {
@@ -22,101 +25,56 @@ namespace Blog.Application.Services
                 throw new InvalidOperationException($"{nameof(request)} cannot be null.");
             }
 
-            AuthorDto? author = await identityApi.GetUserByIdAsync(LoginSession!.UserId) ?? throw new InvalidOperationException($"Invalid AuthorId: {LoginSession.UserId}, the user with provided id could not be found!");
-
             var caterogy = new Category()
             {
                 Title = request.Title,
                 Label = request.Label,
                 Description = request.Description,
-                Slug = StringHelper.ToSlug(request.Title),
                 DisplayPosition = request.DisplayPosition,
-                AuthorId = LoginSession!.UserId
+                AuthorId = LoginSession?.UserId ?? throw new ForbiddenException($"You don't have permission to do this action!"),
+                CoverImageUrl = request.ImageUrl
             };
-
-            if (request.Media != null && request.Media.Count > 0)
-            {
-                caterogy.Media = request.Media.Adapt<ICollection<Media>>();
-            }
 
             Category newCategory = await categoryRepository.AddWithSaveChangesAndReturnModelAsync(caterogy);
 
-            var result = newCategory.Adapt<CategoryDto>();
-            result.Author = author;
-
-            return result;
+            return _mapper.Map<CategoryDto>(newCategory);
         }
 
         public async Task<bool> DeleteAsync(string id)
         {
-            Category category = await categoryRepository.GetEntityByIdAsync(id);
+            Category category = await categoryRepository.GetByIdAsync(id);
 
-            if (IsCurrentPerformingOperationValid(category.AuthorId))
-            {
-                return await categoryRepository.DeleteAndSaveChangesAsync(category);
-            }
+            CheckingCurrentPerformingOperation(category.AuthorId, category.TenantId);
 
-            throw new ForbiddenException($"You're not allowed to update this {nameof(Category)}, reason: {nameof(Category)} is not belong to current user");
+            return await categoryRepository.ForceDeleteAsync(category);
         }
 
         public async Task<CategoryDto> GetByIdAsync(string id)
         {
-            Category category = await categoryRepository.GetEntityWithRelationByIdAsync(id);
-            AuthorDto? author = await identityApi.GetUserByIdAsync(category.AuthorId) ?? throw new InvalidOperationException($"Invalid AuthorId: {category.AuthorId}, the user with provided id could not be found!");
+            Category category = await categoryRepository.GetWithRelationByIdAsync(id);
 
-            var result = category.Adapt<CategoryDto>();
-            result.Author = author;
-
-            return result;
+            return _mapper.Map<CategoryDto>(category);
         }
 
         public async Task<PaginatedResponse<CategoryDto>> SearchAsync(SearchRequest request)
         {
-            Func<IQueryable<Category>, IQueryable<Category>> predicate = categories =>
-            {
-                // Base filter: match keyword in Name
-                IQueryable<Category> query = categories.Where(entity => entity.Label.Contains(request.Keyword));
+            FilterBuildingHelper<Category>? filterBuilder = new(request.Filters ?? []);
+            Func<IQueryable<Category>, IQueryable<Category>>? filterExpression = filterBuilder.Build();
 
-                // Filter out deleted categories if not including deleted
-                if (!request.IsIncludingDelete)
-                {
-                    query = query.Where(entity => !entity.IsDeleted);
-                }
+            PaginatedResponse<Category> result = await categoryRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, filterExpression);
 
-                return query;
-            };
-
-            PaginatedResponse<Category> categories = await categoryRepository.SearchWithPaginatedResponseAsync(request.PageNumber, request.PageSize, predicate);
-
-            IList<AuthorDto>? authors = await identityApi.GetUserByIdsAsync(categories.Data.Select(cat => cat.AuthorId).ToList()) ?? throw new InvalidOperationException("Couldn't be found any Authors following found categories");
-
-            ImmutableList<CategoryDto> result = categories.Data.AsEnumerable().Select(category =>
-            {
-                var dto = category.Adapt<CategoryDto>();
-                dto.Author = authors.First(a => a.Id.Equals(category.AuthorId));
-
-                return dto;
-            }).ToImmutableList();
-
-            return new PaginatedResponse<CategoryDto>(result, categories.TotalCount, categories.PageNumber, categories.TotalPages);
+            return new PaginatedResponse<CategoryDto>(_mapper.Map<IReadOnlyCollection<CategoryDto>>(result.Data), result.TotalCount, result.PageNumber, result.TotalPages);
         }
 
         public async Task<CategoryDto> UpdateAsync(CategoryUpdateRequest request)
         {
-            Category existCategory = await categoryRepository.GetEntityByIdAsync(request.Id) ?? throw new NotFoundException($"{nameof(Category)} with provided id:{request.Id} could not be found.");
+            Category existCategory = await categoryRepository.GetByIdAsync(request.Id) ?? throw new NotFoundException($"{nameof(Category)} with provided id:{request.Id} could not be found.");
 
-            existCategory = request.Adapt(existCategory);
+            _mapper.Map(request, existCategory);
 
-            if (IsCurrentPerformingOperationValid(existCategory.AuthorId))
-            {
-                AuthorDto? author = await identityApi.GetUserByIdAsync(existCategory.AuthorId) ?? throw new InvalidOperationException($"Author is not found by id {existCategory.AuthorId}");
-                CategoryDto result = (await categoryRepository.UpdateWithSaveChangesAndReturnModelAsync(existCategory)).Adapt<CategoryDto>();
-                result.Author = author;
+            CheckingCurrentPerformingOperation(existCategory.AuthorId, existCategory.TenantId);
 
-                return result;
-            }
-
-            throw new ForbiddenException($"You're not allowed to update this {nameof(Category)}, reason: {nameof(Category)} is not belong to current user");
+            return _mapper.Map<CategoryDto>(await categoryRepository.UpdateWithSaveChangesAndReturnModelAsync(existCategory));
         }
     }
 }

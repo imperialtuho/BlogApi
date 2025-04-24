@@ -5,31 +5,16 @@ using Blog.Infrastructure.Configurations;
 using Blog.Infrastructure.Database;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Blog.Infrastructure.Repositories.Providers.Blogs
 {
     public class PostRepository : DbSqlConnectionEFRepositoryBase<ApplicationDbContext, Post>, IPostRepository
     {
-        public PostRepository(ISqlConnectionFactory sqlConnectionFactory, IHttpContextAccessor httpContextAccessor) : base(sqlConnectionFactory, httpContextAccessor)
+        public PostRepository(ISqlConnectionFactory sqlConnectionFactory,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<PostRepository> logger) : base(sqlConnectionFactory, httpContextAccessor, logger)
         {
-        }
-
-        public async Task AssignCategoriesAsync(string postId, IList<string> categoryIds)
-        {
-            IList<PostCategory> postCategories = [];
-
-            foreach (string categoryId in categoryIds)
-            {
-                var postCategory = new PostCategory()
-                {
-                    CategoryId = categoryId,
-                    PostId = postId,
-                };
-
-                postCategories.Add(postCategory);
-            }
-
-            await _dbContext.PostCategories.AddRangeAsync(postCategories);
         }
 
         public async Task<IList<Post>> GetByIdsAsync(IList<string> postIds)

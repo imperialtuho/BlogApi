@@ -1,8 +1,6 @@
-﻿using Blog.Application.Dtos.Author;
-using Blog.Application.Dtos.Base;
+﻿using Blog.Application.Dtos.Base;
 using Blog.Application.Dtos.Comment;
 using Blog.Application.Dtos.Interaction;
-using Blog.Application.Dtos.Media;
 using Blog.Application.Dtos.Tag;
 
 namespace Blog.Application.Dtos.Post
@@ -33,11 +31,9 @@ namespace Blog.Application.Dtos.Post
 
         public IList<string>? HashTags { get; set; }
 
-        public IList<MediaDto>? Media { get; set; }
-
         public IList<string>? CategoryIds { get; set; }
 
-        public AuthorDto Author { get; set; }
+        public string AuthorId { get; set; }
 
         public IList<TagDto> Tags { get; set; } = [];
 

@@ -3,7 +3,6 @@ using Blog.Application.Interfaces.ExternalProviders;
 using Blog.Application.Interfaces.Repositories;
 using Blog.Infrastructure.Configurations;
 using Blog.Infrastructure.Database;
-using Blog.Infrastructure.Repositories.ExternalProviders.AssetApi;
 using Blog.Infrastructure.Repositories.ExternalProviders.IdentityApi;
 using Blog.Infrastructure.Repositories.Providers.Blogs;
 using Microsoft.AspNetCore.Http;
@@ -37,7 +36,6 @@ namespace Blog.Infrastructure
 
             // Adds API client services
             services.AddTransient<IIdentityApi, IdentityApi>();
-            services.AddTransient<IAssetApi, AssetApi>();
 
             // Adds SqlConnectionFactory
             services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
@@ -50,8 +48,8 @@ namespace Blog.Infrastructure
 
             // Adds Repositories.
             services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<IPostCategoryRepository, PostCategoryRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IMediaRepository, MediaRepository>();
 
             return services;
         }

@@ -1,6 +1,6 @@
 ﻿namespace Blog.Domain.Entities
 {
-    public class PostTag
+    public class PostTag : BaseEntity<string>
     {
         public string PostId { get; set; }
 

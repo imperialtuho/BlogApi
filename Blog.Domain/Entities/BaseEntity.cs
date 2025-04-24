@@ -7,13 +7,6 @@ namespace Blog.Domain.Entities
         [Key]
         public TId Id { get; set; }
 
-        public string Language { get; set; } = "en";
-
-        /// <summary>
-        /// Route path.
-        /// </summary>
-        public string? UrlPath { get; set; }
-
         public DateTime? CreatedDate { get; set; }
 
         public string? CreatedBy { get; set; }

@@ -58,7 +58,7 @@ namespace Blog.Api
             services.AddInfrastructureServices(configuration);
             services.AddApplicationServices(configuration);
             services.AddApiServices(configuration);
-            services.AddJwtServices(configuration);
+            services.AddAuthenticationServices(configuration);
 
             // Add Controllers and Swagger
             services.AddControllers();
